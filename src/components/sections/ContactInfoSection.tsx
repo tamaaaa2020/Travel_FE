@@ -28,62 +28,55 @@ export const ContactInfoSection: React.FC = () => {
 
     return (
         <section className="relative w-full bg-red-600 text-white pt-24 pb-32 overflow-hidden">
-
-            {/* GRID UTAMA */}
+            {/* GRID */}
             <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
 
                 {/* MAP */}
-                <div className="w-full flex justify-center md:justify-start">
-                    <img
-                        src="/assets/images/map-placeholder.jpg"  // ganti dengan map milikmu sendiri
-                        alt="Map"
-                        className="rounded-2xl w-full max-w-md shadow-xl object-cover"
-                    />
+                <div className="w-full">
+                    <div className="w-full h-[300px] rounded-2xl overflow-hidden shadow-xl">
+                        <iframe
+                            title="Lokasi Ezytix"
+                            src="https://www.google.com/maps?q=Business+Park+Kirana+Cawang&output=embed"
+                            className="w-full h-full border-0"
+                            loading="lazy"
+                        />
+                    </div>
                 </div>
 
-                {/* TEXT CONTENT */}
+                {/* TEXT */}
                 <div>
-                    <h3 className="text-sm font-semibold tracking-widest">CEPAT DAN AMAN</h3>
+                    <h3 className="text-sm font-semibold tracking-widest">
+                        CEPAT DAN AMAN
+                    </h3>
 
                     <h2 className="text-3xl md:text-4xl font-bold mt-2">
-                        Lorem Ipsum
+                        Hubungi Kami
                     </h2>
 
                     <p className="text-white/90 leading-relaxed mt-4">
-                        Lorem ipsum dolor sit amet consectetur adipiscing elit. Quisque
-                        faucibus ex sapien vitae pellentesque sem placerat. In id cursus mi
-                        pretium tellus duis convallis. Tempus leo eu aenean sed diam urna.
-                    </p>
-
-                    <p className="text-white/90 leading-relaxed mt-4">
-                        Pulvinar vivamus fringilla lacus nec metus bibendum egestas. Massa
-                        nisl malesuada lacinia integer nunc posuere. Ut hendrerit semper
-                        vel class aptent taciti sociosqu.
+                        Kami siap membantu kebutuhan perjalanan Anda dengan
+                        layanan cepat, aman, dan terpercaya.
                     </p>
                 </div>
-
             </div>
 
-            {/* INFO BOXES */}
+            {/* INFO BOX */}
             <div className="max-w-5xl mx-auto px-4 mt-16 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-
                 {infoList.map((item, idx) => (
                     <div
                         key={idx}
-                        className="bg-white/15 backdrop-blur-sm border border-white/20 rounded-xl py-6 px-4 text-center shadow-lg"
+                        className="bg-white/15 backdrop-blur-md border border-white/20 rounded-xl py-6 px-4 text-center shadow-lg"
                     >
                         <div className="text-3xl mb-3 flex justify-center">
                             {item.icon}
                         </div>
-
                         <p className="text-sm font-semibold">{item.title}</p>
                         <p className="text-sm mt-1 opacity-90">{item.value}</p>
                     </div>
                 ))}
-
             </div>
 
-            {/* PUTIH BAWAH (WAVE / DIAGONAL) */}
+            {/* WHITE SLOPE */}
             <div className="absolute bottom-0 left-0 w-full h-[110px] bg-white rotate-[3deg] origin-bottom-left"></div>
         </section>
     );
