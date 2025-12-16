@@ -1,10 +1,10 @@
 import React from "react";
 import { Navbar } from "../components/layout/Navbar";
-import ContactForm from "../components/checkout/ContactForm";
-import PassengerForm from "../components/checkout/PassengerForm";
-import PassportForm from "../components/checkout/PassportForm";
-import BookingSummary from "../components/checkout/BookingSummary";
-import PaymentSummary from "../components/checkout/PaymentSummary";
+import ContactForm from "../components/sections/ContatcForm";
+import PassengerForm from "../components/sections/PassengerForm";
+import PassportForm from "../components/sections/PassportForm";
+import BookingSummary from "../components/sections/BookingSummary";
+// import PaymentSummary from "../components/sections/PaymentSummary";
 
 export default function CheckoutPage() {
   return (
@@ -17,7 +17,7 @@ export default function CheckoutPage() {
           <ContactForm />
           <PassengerForm />
           <PassportForm />
-          <PaymentSummary />
+          {/* <PaymentSummary /> */}
         </div>
 
         {/* RIGHT */}
