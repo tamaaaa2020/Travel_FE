@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { NavPesanTiket } from "../components/layout/NavPesanTiket";
 import {
   FiBriefcase,
@@ -12,7 +12,6 @@ import {
 
 export default function FlightDetailPage() {
   const navigate = useNavigate();
-  const { id } = useParams();
 
   return (
     <div className="min-h-screen bg-gray-100">
