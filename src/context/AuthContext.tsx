@@ -24,6 +24,11 @@ export interface User {
     updated_at: string;
 }
 
+interface LoginResponse {
+    message: string;
+    user: User;
+}
+
 interface RegisterPayload {
     full_name: string;
     username: string;
@@ -84,14 +89,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setLoading(true);
 
         try {
-            await api.post(
-                "/auth/login",
-                { email: identifier, phone: identifier, password },
-                { withCredentials: true }
-            );
-
-            const res = await api.get<User>("/auth/me", { withCredentials: true });
-            const loggedInUser = res.data;
+            const isEmail = identifier.includes("@");
+            const payload = isEmail
+                ? { email: identifier, password }
+                : { phone: identifier, password };
+            const resLogin = await api.post<LoginResponse>("/auth/login", payload, {
+                withCredentials: true,
+            });
+            const loggedInUser = resLogin.data.user;
 
             setUser(loggedInUser);
 
