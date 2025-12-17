@@ -1,10 +1,6 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React from "react";
 
-export default function PaymentSummary() {
-  const navigate = useNavigate();
-  const [paymentMethod, setPaymentMethod] = useState("qris");
-
+export default function PaymentSummary({ paymentMethod, setPaymentMethod, onSubmit, loading }) {
   return (
     <div className="bg-white rounded-xl p-6 shadow space-y-4">
       <h3 className="font-semibold text-lg">Metode Pembayaran</h3>
@@ -21,18 +17,6 @@ export default function PaymentSummary() {
         </div>
       </label>
 
-      {/* OVO */}
-      <label className="flex items-center justify-between border rounded-lg p-4 cursor-pointer">
-        <div className="flex items-center gap-3">
-          <input
-            type="radio"
-            checked={paymentMethod === "ovo"}
-            onChange={() => setPaymentMethod("ovo")}
-          />
-          <span className="font-medium">OVO</span>
-        </div>
-      </label>
-
       {/* TOTAL */}
       <div className="flex justify-between font-semibold pt-4 border-t">
         <span>Total Pembayaran</span>
@@ -41,12 +25,11 @@ export default function PaymentSummary() {
 
       {/* BUTTON */}
       <button
-        onClick={() => navigate("/payment", {
-          state: { paymentMethod }
-        })}
-        className="w-full mt-4 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600"
+        onClick={onSubmit}
+        disabled={loading}
+        className="w-full mt-4 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:bg-gray-400"
       >
-        Lanjut Bayar
+        {loading ? "Memproses..." : "Lanjut Bayar"}
       </button>
     </div>
   );

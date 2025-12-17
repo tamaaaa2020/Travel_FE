@@ -187,7 +187,7 @@ export default function PesanTiketPage() {
                   <p className="text-sm">ECONOMY</p>
                   <p className="font-bold text-red-600">IDR {f.flight_classes?.[0]?.price?.toLocaleString()}</p>
                   <button
-                    onClick={() => navigate("/checkout", { state: { flight: f } })}
+                    onClick={() => navigate("/checkout", { state: { flight: f, passengers: parseInt(passenger) } })}
                     className="mt-2 px-5 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
                   >
                     Pilih

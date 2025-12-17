@@ -39,8 +39,10 @@ export default function AppRouter() {
 
       {/* ================= BOOKING FLOW ================= */}
       <Route path="/pesan-tiket" element={<PesanTiketPage />} />
-      <Route path="/checkout" element={<CheckoutPage />} />
-      <Route path="/payment" element={<PaymentPage />} />
+      <Route element={<ProtectedRoute />}>
+        <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/payment" element={<PaymentPage />} />
+      </Route>
 
       {/* ================= USER (LOGIN REQUIRED) ================= */}
       <Route element={<ProtectedRoute />}>

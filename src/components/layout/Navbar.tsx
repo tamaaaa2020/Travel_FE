@@ -65,7 +65,7 @@ export const Navbar: React.FC = () => {
 
           {user && (
             <Link
-              to="/riwayat"
+              to="/riwayat-pemesanan"
               className={`transition ${
                 isScrolled
                   ? "text-gray-900 hover:text-black"
