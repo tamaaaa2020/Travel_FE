@@ -1,19 +1,27 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 
-/* ===== PAGES ===== */
+/* ===== PUBLIC PAGES ===== */
 import { LandingPage } from "../pages/LandingPage";
 import LoginPage from "../pages/LoginPage";
 import RegisterPage from "../pages/RegisterPage";
 import VerifOtp from "../pages/VerifOtp";
 import ForgotPasswordPage from "../pages/ForgotPasswordPage";
 
+/* ===== BOOKING FLOW ===== */
 import PesanTiketPage from "../pages/PesanTiketPage";
 import CheckoutPage from "../pages/CheckoutPage";
 import PaymentPage from "../pages/PaymentPage";
 import RiwayatPemesananPage from "../pages/RiwayatPemesananPage";
 
-import DashboardPage from "../pages/admin/DashboardPage";
+/* ===== USER ===== */
 import ProfilePage from "../pages/ProfilePage";
+
+/* ===== ADMIN PAGES ===== */
+import DashboardPage from "../pages/admin/DashboardPage";
+import AirportsPage from "../pages/admin/AirportsPage";
+import FlightsPage from "../pages/admin/FlightsPage";
+import PaymentsPage from "../pages/admin/PaymentsPage";
+import UsersPage from "../pages/admin/UsersPage";
 
 /* ===== ROUTE GUARD ===== */
 import ProtectedRoute from "./ProtectedRoute";
@@ -46,6 +54,10 @@ export default function AppRouter() {
       {/* ================= ADMIN ================= */}
       <Route element={<AdminRoute />}>
         <Route path="/admin/dashboard" element={<DashboardPage />} />
+        <Route path="/admin/airports" element={<AirportsPage />} />
+        <Route path="/admin/flights" element={<FlightsPage />} />
+        <Route path="/admin/payments" element={<PaymentsPage />} />
+        <Route path="/admin/users" element={<UsersPage />} />
       </Route>
 
       {/* ================= FALLBACK ================= */}
