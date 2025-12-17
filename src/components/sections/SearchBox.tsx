@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { FiSearch, FiMapPin, FiUsers } from "react-icons/fi";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { api } from "../../lib/axios";
 
 /* =======================
    ANIMATION VARIANTS
@@ -40,6 +42,43 @@ const itemVariants = {
    COMPONENT
 ======================= */
 export const SearchBox: React.FC = () => {
+  const navigate = useNavigate();
+  const [airports, setAirports] = useState<any[]>([]);
+
+  // Form State
+  const [originId, setOriginId] = useState("");
+  const [destId, setDestId] = useState("");
+  const [departDate, setDepartDate] = useState("");
+  const [returnDate, setReturnDate] = useState("");
+  const [passenger, setPassenger] = useState("1");
+
+  useEffect(() => {
+    const fetchAirports = async () => {
+      try {
+        const res = await api.get("/airports");
+        if (res.data && res.data.data) {
+          setAirports(res.data.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch airports", err);
+      }
+    };
+    fetchAirports();
+  }, []);
+
+  const handleSearch = () => {
+    const params = new URLSearchParams();
+    if (originId) params.append("origin_airport_id", originId);
+    if (destId) params.append("destination_airport_id", destId);
+    if (departDate) params.append("departure_date", departDate);
+    if (passenger) params.append("passenger", passenger);
+
+    navigate({
+      pathname: "/pesan-tiket",
+      search: params.toString(),
+    });
+  };
+
   return (
     <motion.div
       className="w-full max-w-5xl mx-auto bg-white shadow-xl rounded-3xl p-6 mt-6"
@@ -78,11 +117,18 @@ export const SearchBox: React.FC = () => {
           variants={itemVariants}
         >
           <FiMapPin className="text-red-500 text-xl" />
-          <input
-            type="text"
-            placeholder="Jakarta, JKTC"
-            className="bg-transparent w-full outline-none text-sm"
-          />
+          <select
+            value={originId}
+            onChange={(e) => setOriginId(e.target.value)}
+            className="bg-transparent w-full outline-none text-sm appearance-none"
+          >
+            <option value="">Dari (Kota/Bandara)</option>
+            {airports.map((a) => (
+              <option key={a.id} value={a.id}>
+                {a.city_name} ({a.code})
+              </option>
+            ))}
+          </select>
         </motion.div>
 
         {/* KE */}
@@ -91,16 +137,25 @@ export const SearchBox: React.FC = () => {
           variants={itemVariants}
         >
           <FiMapPin className="text-red-500 text-xl" />
-          <input
-            type="text"
-            placeholder="Denpasar-Bali, DPS"
-            className="bg-transparent w-full outline-none text-sm"
-          />
+          <select
+            value={destId}
+            onChange={(e) => setDestId(e.target.value)}
+            className="bg-transparent w-full outline-none text-sm appearance-none"
+          >
+            <option value="">Ke (Kota/Bandara)</option>
+            {airports.map((a) => (
+              <option key={a.id} value={a.id}>
+                {a.city_name} ({a.code})
+              </option>
+            ))}
+          </select>
         </motion.div>
 
         {/* PERGI */}
         <motion.input
           type="date"
+          value={departDate}
+          onChange={(e) => setDepartDate(e.target.value)}
           className="bg-gray-100 px-3 py-3 rounded-xl text-sm outline-none"
           variants={itemVariants}
         />
@@ -108,6 +163,8 @@ export const SearchBox: React.FC = () => {
         {/* PULANG */}
         <motion.input
           type="date"
+          value={returnDate}
+          onChange={(e) => setReturnDate(e.target.value)}
           className="bg-gray-100 px-3 py-3 rounded-xl text-sm outline-none"
           variants={itemVariants}
         />
@@ -118,10 +175,14 @@ export const SearchBox: React.FC = () => {
           variants={itemVariants}
         >
           <FiUsers className="text-red-500 text-xl" />
-          <select className="bg-transparent w-full text-sm outline-none">
-            <option>1 Penumpang, Ekonomi</option>
-            <option>2 Penumpang, Ekonomi</option>
-            <option>1 Penumpang, Bisnis</option>
+          <select 
+            value={passenger}
+            onChange={(e) => setPassenger(e.target.value)}
+            className="bg-transparent w-full text-sm outline-none"
+          >
+            <option value="1">1 Penumpang</option>
+            <option value="2">2 Penumpang</option>
+            <option value="3">3 Penumpang</option>
           </select>
         </motion.div>
       </motion.div>
@@ -134,6 +195,7 @@ export const SearchBox: React.FC = () => {
         variants={itemVariants}
       >
         <motion.button
+          onClick={handleSearch}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           className="px-6 py-3 bg-red-500 rounded-xl text-white
