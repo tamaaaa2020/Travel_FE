@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function PaymentSummary({ paymentMethod, setPaymentMethod, onSubmit, loading }) {
+export default function PaymentSummary({ paymentMethod, setPaymentMethod, onSubmit, loading, total }) {
   return (
     <div className="bg-white rounded-xl p-6 shadow space-y-4">
       <h3 className="font-semibold text-lg">Metode Pembayaran</h3>
@@ -20,7 +20,7 @@ export default function PaymentSummary({ paymentMethod, setPaymentMethod, onSubm
       {/* TOTAL */}
       <div className="flex justify-between font-semibold pt-4 border-t">
         <span>Total Pembayaran</span>
-        <span className="text-red-600">IDR 1.044.400</span>
+        <span className="text-red-600">IDR {total ? total.toLocaleString() : 0}</span>
       </div>
 
       {/* BUTTON */}

@@ -1,8 +1,20 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { NavPesanTiket } from "../components/layout/NavPesanTiket";
 import { FiClock } from "react-icons/fi";
 
 export default function PaymentPage() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { bookingId, amount, method } = location.state || {};
+
+  useEffect(() => {
+    if (!bookingId) {
+      // If no booking ID, redirect back or show empty state
+      // navigate("/");
+    }
+  }, [bookingId, navigate]);
+
   return (
     <div className="min-h-screen bg-gray-100">
       <NavPesanTiket />
@@ -16,6 +28,9 @@ export default function PaymentPage() {
               <div>
                 <h2 className="font-semibold text-lg">Rincian Pesanan</h2>
                 <p className="text-sm text-gray-500">
+                  ID Pemesanan: {bookingId || "-"}
+                </p>
+                <p className="text-sm text-gray-500">
                   Selesaikan pembayaran sebelum waktu habis
                 </p>
               </div>
@@ -27,7 +42,7 @@ export default function PaymentPage() {
             </div>
 
             <div className="border rounded-lg p-6 text-center">
-              <p className="font-semibold mb-3">QRIS</p>
+              <p className="font-semibold mb-3 uppercase">{method || "QRIS"}</p>
 
               <div className="w-48 h-48 bg-gray-200 mx-auto mb-3 flex items-center justify-center text-sm">
                 QR CODE
@@ -53,20 +68,12 @@ export default function PaymentPage() {
 
         {/* RIGHT */}
         <div className="bg-white rounded-xl shadow p-6 h-fit">
-          <h3 className="font-semibold mb-4">Flight Summary</h3>
-
-          <p className="text-sm font-medium">
-            Jakarta (CGK) → Denpasar (DPS)
-          </p>
-
-          <p className="text-xs text-gray-500 mb-3">
-            Lion Air • Economy
-          </p>
+          <h3 className="font-semibold mb-4">Ringkasan Pembayaran</h3>
 
           <div className="flex justify-between text-sm mb-2">
             <span>Total Pembayaran</span>
             <span className="font-bold text-red-600">
-              IDR 1.044.400
+              IDR {amount ? amount.toLocaleString() : 0}
             </span>
           </div>
         </div>
