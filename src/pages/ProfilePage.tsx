@@ -3,7 +3,7 @@ import { NavPesanTiket } from "../components/layout/NavPesanTiket";
 import { useAuth } from "../context/AuthContext";
 
 export default function ProfilePage() {
-  const { user, loading } = useAuth();
+  const { user, loading, logout } = useAuth();
 
   if (loading) {
     return (
@@ -47,6 +47,15 @@ export default function ProfilePage() {
             <ProfileItem label="Email" value={user.email} />
             <ProfileItem label="No. Telepon" value={user.phone || "-"} />
             <ProfileItem label="Role" value={user.role || "user"} />
+          </div>
+
+          <div className="mt-8 pt-6 border-t border-gray-100">
+            <button
+              onClick={() => logout()}
+              className="px-6 py-2.5 bg-red-50 text-red-600 font-medium rounded-lg hover:bg-red-100 transition-colors"
+            >
+              Keluar Akun
+            </button>
           </div>
         </div>
       </div>
