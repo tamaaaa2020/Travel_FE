@@ -6,7 +6,12 @@ import { FiClock } from "react-icons/fi";
 export default function PaymentPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { bookingId, amount, method } = location.state || {};
+  const { order, paymentMethod } = location.state || {};
+
+  const bookingId = order?.order_id || location.state?.bookingId;
+  const amount = order?.total_amount || location.state?.amount;
+  const method = paymentMethod || location.state?.method || "QRIS";
+  const paymentUrl = order?.payment_url;
 
   useEffect(() => {
     if (!bookingId) {
@@ -42,14 +47,32 @@ export default function PaymentPage() {
             </div>
 
             <div className="border rounded-lg p-6 text-center">
-              <p className="font-semibold mb-3 uppercase">{method || "QRIS"}</p>
+              <p className="font-semibold mb-3 uppercase">{method}</p>
 
-              <div className="w-48 h-48 bg-gray-200 mx-auto mb-3 flex items-center justify-center text-sm">
-                QR CODE
-              </div>
+              {paymentUrl ? (
+                <div className="mx-auto mb-3 flex flex-col items-center">
+                  <img 
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(paymentUrl)}`} 
+                    alt="Scan QR to Pay"
+                    className="w-48 h-48 object-contain mb-3"
+                  />
+                  <a 
+                    href={paymentUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 underline text-sm hover:text-blue-800"
+                  >
+                    Link Pembayaran Alternatif
+                  </a>
+                </div>
+              ) : (
+                <div className="w-48 h-48 bg-gray-200 mx-auto mb-3 flex items-center justify-center text-sm">
+                  QR CODE
+                </div>
+              )}
 
               <p className="text-xs text-gray-500">
-                QR akan kedaluwarsa otomatis
+                Scan QR di atas atau klik link untuk membayar
               </p>
             </div>
           </div>
@@ -73,7 +96,7 @@ export default function PaymentPage() {
           <div className="flex justify-between text-sm mb-2">
             <span>Total Pembayaran</span>
             <span className="font-bold text-red-600">
-              IDR {amount ? amount.toLocaleString() : 0}
+              IDR {amount ? Number(amount).toLocaleString("id-ID") : 0}
             </span>
           </div>
         </div>

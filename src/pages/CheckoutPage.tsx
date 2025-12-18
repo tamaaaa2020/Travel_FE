@@ -10,14 +10,53 @@ import PassportForm from "../components/sections/PassportForm";
 import BookingSummary from "../components/sections/BookingSummary";
 import PaymentSummary from "../components/sections/PaymentSummary";
 
+interface Flight {
+  id: number;
+  flight_code: string;
+  airline: {
+    id: number;
+    iata: string;
+    name: string;
+    logo_url: string;
+  };
+  origin: {
+    id: number;
+    code: string;
+    city_name: string;
+    airport_name: string;
+  };
+  destination: {
+    id: number;
+    code: string;
+    city_name: string;
+    airport_name: string;
+  };
+  departure_time: string;
+  arrival_time: string;
+  total_duration_minutes: number;
+  duration_formatted: string;
+  transit_count: number;
+  transit_info: string;
+  flight_legs: any[];
+  flight_classes: FlightClass[];
+}
+
+interface FlightClass {
+  id: number;
+  seat_class: string;
+  price: string;
+  total_seats: number;
+}
+
 export default function CheckoutPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const state = location.state;
 
-  const flight = state?.flight;
+  const flight = state?.flight as Flight;
   const passengerCount = state?.passengers || 1;
+  const selectedSeatClass = state?.seat_class || "economy"; // Get selected seat class
 
   // Redirect if no flight
   useEffect(() => {
@@ -40,7 +79,7 @@ export default function CheckoutPage() {
   const [passengers, setPassengers] = useState(
     Array.from({ length: passengerCount }, () => ({
       passenger: {
-        title: "Tuan",
+        title: "tuan",
         firstName: "",
         lastName: "",
         dobDay: "",
@@ -58,36 +97,8 @@ export default function CheckoutPage() {
     }))
   );
 
-  const [airports, setAirports] = useState([]);
-  const [originAirport, setOriginAirport] = useState(null);
-  const [destAirport, setDestAirport] = useState(null);
-
-  const [paymentMethod, setPaymentMethod] = useState("qris");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  // Fetch airports list
-  useEffect(() => {
-    const fetchAirports = async () => {
-      try {
-        const res = await api.get("/airports");
-        setAirports(res.data.data || []);
-      } catch (err) {
-        console.error("Error fetching airports:", err);
-      }
-    };
-    fetchAirports();
-  }, []);
-
-  // Set origin and dest airports when airports loaded and flight ids available
-  useEffect(() => {
-    if (airports.length > 0 && flight) {
-      const origin = airports.find(a => a.id === flight.origin_airport_id);
-      const dest = airports.find(a => a.id === flight.destination_airport_id);
-      setOriginAirport(origin || null);
-      setDestAirport(dest || null);
-    }
-  }, [airports, flight]);
+  const [error, setError] = useState<string | null>(null);
 
   // Pre-fill contact and first passenger from user
   useEffect(() => {
@@ -109,6 +120,7 @@ export default function CheckoutPage() {
           ...newPass[0],
           passenger: {
             ...newPass[0].passenger,
+            title: "tuan",
             firstName,
             lastName,
           },
@@ -119,30 +131,59 @@ export default function CheckoutPage() {
   }, [user]);
 
   // Handle changes
-  const handleContactChange = (field, value) => {
+  const handleContactChange = (field: string, value: string) => {
     setContactData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handlePassengerChange = (index, field, value) => {
+  const handlePassengerChange = (index: number, field: string, value: string) => {
     setPassengers(prev => {
       const newPass = [...prev];
-      newPass[index].passenger[field] = value;
+      newPass[index] = {
+        ...newPass[index],
+        passenger: {
+          ...newPass[index].passenger,
+          [field]: value
+        }
+      };
       return newPass;
     });
   };
 
-  const handlePassportChange = (index, field, value) => {
+  const handlePassportChange = (index: number, field: string, value: string) => {
     setPassengers(prev => {
       const newPass = [...prev];
-      newPass[index].passport[field] = value;
+      newPass[index] = {
+        ...newPass[index],
+        passport: {
+          ...newPass[index].passport,
+          [field]: value
+        }
+      };
       return newPass;
     });
   };
 
   // Format date to YYYY-MM-DD
-  const formatDate = (day, month, year) => {
+  const formatDate = (day: string, month: string, year: string) => {
     if (!day || !month || !year) return "";
     return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+  };
+
+  // Get proper title format for backend
+  const getTitleForBackend = (title: string): string => {
+    switch (title.toLowerCase()) {
+      case 'tuan':
+      case 'mr':
+        return 'tuan';
+      case 'nyonya':
+      case 'mrs':
+        return 'nyonya';
+      case 'nona':
+      case 'ms':
+        return 'nona';
+      default:
+        return 'tuan';
+    }
   };
 
   // Handle submit
@@ -177,7 +218,7 @@ export default function CheckoutPage() {
 
     // Prepare passengers request
     const passengersReq = passengers.map(({ passenger: p, passport: ps }) => ({
-      title: p.title.toLowerCase(),
+      title: getTitleForBackend(p.title),
       full_name: `${p.firstName} ${p.lastName}`,
       dob: formatDate(p.dobDay, p.dobMonth, p.dobYear),
       nationality: p.nationality,
@@ -189,7 +230,7 @@ export default function CheckoutPage() {
     // Prepare booking item
     const bookingItem = {
       flight_id: flight.id,
-      seat_class: "economy",
+      seat_class: selectedSeatClass,
       passengers: passengersReq,
     };
 
@@ -212,15 +253,15 @@ export default function CheckoutPage() {
       } catch {}
 
       // Redirect ke payment URL jika tersedia
-      if (data.payment_url) {
-        window.location.href = data.payment_url;
-      } else {
+      // if (data.payment_url) {
+      //   window.location.href = data.payment_url;
+      // } else {
         // Fallback ke halaman payment internal
         navigate("/payment", {
-          state: { paymentMethod, order: data },
+          state: { paymentMethod: "qris", order: data },
         });
-      }
-    } catch (err) {
+      // }
+    } catch (err: any) {
       setError(err.response?.data?.error || "Gagal membuat pesanan");
     } finally {
       setLoading(false);
@@ -252,8 +293,8 @@ export default function CheckoutPage() {
           ))}
 
           <PaymentSummary
-            paymentMethod={paymentMethod}
-            setPaymentMethod={setPaymentMethod}
+            paymentMethod="qris"
+            setPaymentMethod={() => {}} // Fixed payment method for now
             onSubmit={handleSubmit}
             loading={loading}
           />
@@ -262,9 +303,8 @@ export default function CheckoutPage() {
         {/* RIGHT */}
         <BookingSummary
           flight={flight}
-          originAirport={originAirport}
-          destAirport={destAirport}
           passengerCount={passengerCount}
+          seatClass={selectedSeatClass}
         />
       </div>
 

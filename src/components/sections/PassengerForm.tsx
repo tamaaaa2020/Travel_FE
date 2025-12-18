@@ -10,12 +10,13 @@ export default function PassengerForm({ index, data, onChange }) {
         {/* ... existing fields with value and onChange using onChange(field, value) ... */}
         <div className="flex gap-6 text-sm">
           {["Tuan", "Nyonya", "Nona"].map((t) => (
-            <label key={t} className="flex items-center gap-2">
+            <label key={t} className="flex items-center gap-2 cursor-pointer">
               <input
                 type="radio"
                 name={`passengerTitle-${index}`}
-                checked={data.title === t}
-                onChange={() => onChange("title", t)}
+                checked={data.title.toLowerCase() === t.toLowerCase()}
+                onChange={() => onChange("title", t.toLowerCase())}
+                className="cursor-pointer"
               />
               {t}
             </label>

@@ -1,29 +1,50 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AdminSidebar from "../../components/admin/AdminSidebar";
+import { api } from "../../lib/axios";
 
 interface Airport {
+  id: number;
   code: string;
-  name: string;
-  city: string;
+  airport_name: string;
+  city_name: string;
+  country: string;
 }
 
 export default function AirportsPage() {
-  const [airports, setAirports] = useState<Airport[]>([
-    { code: "CGK", name: "Soekarno Hatta", city: "Jakarta" },
-    { code: "DPS", name: "Ngurah Rai", city: "Bali" },
-  ]);
+  const [airports, setAirports] = useState<Airport[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // FETCH DATA
+  useEffect(() => {
+    fetchAirports();
+  }, []);
+
+  const fetchAirports = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get("/airports");
+      if (res.data && res.data.data) {
+        setAirports(res.data.data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch airports", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Airport | null>(null);
-  const [form, setForm] = useState<Airport>({
+  const [form, setForm] = useState<Partial<Airport>>({
     code: "",
-    name: "",
-    city: "",
+    airport_name: "",
+    city_name: "",
+    country: "Indonesia"
   });
 
   const openAdd = () => {
     setEditing(null);
-    setForm({ code: "", name: "", city: "" });
+    setForm({ code: "", airport_name: "", city_name: "", country: "Indonesia" });
     setShowModal(true);
   };
 
@@ -33,20 +54,32 @@ export default function AirportsPage() {
     setShowModal(true);
   };
 
-  const handleSubmit = () => {
-    if (editing) {
-      setAirports((prev) =>
-        prev.map((a) => (a.code === editing.code ? form : a))
-      );
-    } else {
-      setAirports((prev) => [...prev, form]);
+  const handleSubmit = async () => {
+    try {
+      if (editing) {
+        // EDIT (PUT /admin/airports/:id)
+        await api.put(`/admin/airports/${editing.id}`, form);
+      } else {
+        // ADD (POST /admin/airports)
+        await api.post("/admin/airports", form);
+      }
+      fetchAirports();
+      setShowModal(false);
+    } catch (err) {
+      console.error("Failed to save airport", err);
+      alert("Gagal menyimpan data. Pastikan Anda login sebagai Admin.");
     }
-    setShowModal(false);
   };
 
-  const handleDelete = (code: string) => {
+  const handleDelete = async (id: number) => {
     if (confirm("Hapus airport ini?")) {
-      setAirports((prev) => prev.filter((a) => a.code !== code));
+      try {
+        await api.delete(`/admin/airports/${id}`);
+        fetchAirports();
+      } catch (err) {
+        console.error("Failed to delete airport", err);
+        alert("Gagal menghapus data.");
+      }
     }
   };
 
@@ -77,10 +110,10 @@ export default function AirportsPage() {
             </thead>
             <tbody>
               {airports.map((a) => (
-                <tr key={a.code} className="border-t">
+                <tr key={a.id} className="border-t">
                   <td className="p-4 font-semibold">{a.code}</td>
-                  <td>{a.name}</td>
-                  <td>{a.city}</td>
+                  <td>{a.airport_name}</td>
+                  <td>{a.city_name}</td>
                   <td className="p-4 space-x-3">
                     <button
                       onClick={() => openEdit(a)}
@@ -89,7 +122,7 @@ export default function AirportsPage() {
                       Edit
                     </button>
                     <button
-                      onClick={() => handleDelete(a.code)}
+                      onClick={() => handleDelete(a.id)}
                       className="text-red-600"
                     >
                       Delete
@@ -120,15 +153,15 @@ export default function AirportsPage() {
 
             <input
               placeholder="Name"
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              value={form.airport_name}
+              onChange={(e) => setForm({ ...form, airport_name: e.target.value })}
               className="w-full border px-3 py-2 rounded"
             />
 
             <input
               placeholder="City"
-              value={form.city}
-              onChange={(e) => setForm({ ...form, city: e.target.value })}
+              value={form.city_name}
+              onChange={(e) => setForm({ ...form, city_name: e.target.value })}
               className="w-full border px-3 py-2 rounded"
             />
 

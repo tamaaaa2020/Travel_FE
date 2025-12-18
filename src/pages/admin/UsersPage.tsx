@@ -3,27 +3,28 @@ import AdminSidebar from "../../components/admin/AdminSidebar";
 
 interface User {
   id: number;
-  name: string;
+  full_name: string;      // Changed from 'name' to 'full_name' to match backend
   email: string;
-  role: "admin" | "user";
-  status: "active" | "inactive";
+  phone: string;         // Added phone field
+  role: "admin" | "customer";  // Changed from 'user' to 'customer' to match backend
+  // Removed 'status' field as it's not in backend model
 }
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([
     {
       id: 1,
-      name: "User 101010",
+      full_name: "User 101010",
       email: "user101010@gmail.com",
-      role: "user",
-      status: "active",
+      phone: "081234567891",
+      role: "customer",
     },
     {
       id: 2,
-      name: "Admin Ezytix",
+      full_name: "Admin Ezytix",
       email: "admin@ezytix.com",
+      phone: "081234567890",
       role: "admin",
-      status: "active",
     },
   ]);
 
@@ -31,20 +32,20 @@ export default function UsersPage() {
   const [editing, setEditing] = useState<User | null>(null);
   const [form, setForm] = useState<User>({
     id: 0,
-    name: "",
+    full_name: "",
     email: "",
-    role: "user",
-    status: "active",
+    phone: "",
+    role: "customer",
   });
 
   const openAdd = () => {
     setEditing(null);
     setForm({
       id: Date.now(),
-      name: "",
+      full_name: "",
       email: "",
-      role: "user",
-      status: "active",
+      phone: "",
+      role: "customer",
     });
     setShowModal(true);
   };
@@ -99,28 +100,18 @@ export default function UsersPage() {
               <tr>
                 <th className="px-4 py-3">Nama</th>
                 <th>Email</th>
+                <th>Phone</th>
                 <th>Role</th>
-                <th>Status</th>
                 <th className="px-4 py-3">Action</th>
               </tr>
             </thead>
             <tbody>
               {users.map((u) => (
                 <tr key={u.id} className="border-t">
-                  <td className="px-4 py-3 font-medium">{u.name}</td>
+                  <td className="px-4 py-3 font-medium">{u.full_name}</td>
                   <td>{u.email}</td>
+                  <td>{u.phone}</td>
                   <td className="capitalize">{u.role}</td>
-                  <td>
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs ${
-                        u.status === "active"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-gray-200 text-gray-600"
-                      }`}
-                    >
-                      {u.status}
-                    </span>
-                  </td>
                   <td className="px-4 py-3 space-x-2">
                     <button
                       onClick={() => openEdit(u)}
@@ -151,10 +142,10 @@ export default function UsersPage() {
             </h2>
 
             <input
-              placeholder="Nama"
-              value={form.name}
+              placeholder="Nama Lengkap"
+              value={form.full_name}
               onChange={(e) =>
-                setForm({ ...form, name: e.target.value })
+                setForm({ ...form, full_name: e.target.value })
               }
               className="w-full border px-3 py-2 rounded"
             />
@@ -168,6 +159,15 @@ export default function UsersPage() {
               className="w-full border px-3 py-2 rounded"
             />
 
+            <input
+              placeholder="Phone"
+              value={form.phone}
+              onChange={(e) =>
+                setForm({ ...form, phone: e.target.value })
+              }
+              className="w-full border px-3 py-2 rounded"
+            />
+
             <select
               value={form.role}
               onChange={(e) =>
@@ -175,19 +175,8 @@ export default function UsersPage() {
               }
               className="w-full border px-3 py-2 rounded"
             >
-              <option value="user">User</option>
+              <option value="customer">Customer</option>
               <option value="admin">Admin</option>
-            </select>
-
-            <select
-              value={form.status}
-              onChange={(e) =>
-                setForm({ ...form, status: e.target.value as any })
-              }
-              className="w-full border px-3 py-2 rounded"
-            >
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
             </select>
 
             <div className="flex justify-end gap-2 pt-4">

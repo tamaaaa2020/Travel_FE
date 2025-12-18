@@ -46,7 +46,7 @@ export default function ProfilePage() {
             <ProfileItem label="Nama Lengkap" value={user.full_name} />
             <ProfileItem label="Email" value={user.email} />
             <ProfileItem label="No. Telepon" value={user.phone || "-"} />
-            <ProfileItem label="Role" value={user.role || "user"} />
+            <ProfileItem label="Role" value={user.role === "admin" ? "Admin" : "Customer"} />
           </div>
 
           <div className="mt-8 pt-6 border-t border-gray-100">

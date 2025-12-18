@@ -9,14 +9,69 @@ import {
   FiAirplay,
   FiShuffle,
 } from "react-icons/fi";
+import { PassengerClassSelector } from "../components/ui/PassengerClassSelector";
+import { FlightCard } from "../components/ui/FlightCard";
+
+// Type definitions matching new BE structure
+interface Airport {
+  id: number;
+  code: string;
+  city_name: string;
+  airport_name: string;
+}
+
+interface Airline {
+  id: number;
+  iata: string;
+  name: string;
+  logo_url: string;
+}
+
+interface FlightClass {
+  id: number;
+  seat_class: string;
+  price: string; // decimal as string from BE
+  total_seats: number;
+}
+
+interface FlightLeg {
+  id: number;
+  leg_order: number;
+  airline: Airline;
+  origin: Airport;
+  destination: Airport;
+  departure_time: string;
+  arrival_time: string;
+  duration_minutes: number;
+  duration_formatted: string;
+  flight_number: string;
+  layover_duration_minutes?: number;
+  layover_duration_formatted?: string;
+}
+
+interface Flight {
+  id: number;
+  flight_code: string;
+  airline: Airline;
+  origin: Airport;
+  destination: Airport;
+  departure_time: string;
+  arrival_time: string;
+  total_duration_minutes: number;
+  duration_formatted: string;
+  transit_count: number;
+  transit_info: string;
+  flight_legs: FlightLeg[];
+  flight_classes: FlightClass[];
+}
 
 export default function PesanTiketPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // ===== DATA STATE =====
-  const [flights, setFlights] = useState<any[]>([]);
-  const [airports, setAirports] = useState<any[]>([]);
+  const [flights, setFlights] = useState<Flight[]>([]);
+  const [airports, setAirports] = useState<Airport[]>([]);
   const [loading, setLoading] = useState(false);
 
   // ===== SEARCH STATE =====
@@ -24,6 +79,7 @@ export default function PesanTiketPage() {
   const [destId, setDestId] = useState(searchParams.get("destination_airport_id") || "");
   const [departDate, setDepartDate] = useState(searchParams.get("departure_date") || "");
   const [passenger, setPassenger] = useState(searchParams.get("passenger") || "1");
+  const [seatClass, setSeatClass] = useState(searchParams.get("seat_class") || "economy");
 
   // ===== FILTER STATE =====
   const [sort, setSort] = useState("Termurah");
@@ -64,19 +120,16 @@ export default function PesanTiketPage() {
       if (originId) params.origin_airport_id = originId;
       if (destId) params.destination_airport_id = destId;
       if (departDate) params.departure_date = departDate;
+      if (seatClass) params.seat_class = seatClass;
 
-      console.log("Fetching flights with params:", params);
       const res = await api.get("/flights", { params });
       console.log("API Response:", res.data);
       
       if (res.data && res.data.data) {
         // Ensure flights match origin and destination exactly
-        const filtered = res.data.data.filter((f: any) => {
-          console.log("Checking flight:", f);
-          const originMatch = String(f.origin_airport_id) === String(originId);
-          const destMatch = String(f.destination_airport_id) === String(destId);
-          console.log(`Origin match: ${originMatch} (${f.origin_airport_id} vs ${originId})`);
-          console.log(`Dest match: ${destMatch} (${f.destination_airport_id} vs ${destId})`);
+        const filtered = res.data.data.filter((f: Flight) => {
+          const originMatch = String(f.origin.id) === String(originId);
+          const destMatch = String(f.destination.id) === String(destId);
           return originMatch && destMatch;
         });
         console.log("Filtered flights:", filtered);
@@ -99,6 +152,7 @@ export default function PesanTiketPage() {
       destination_airport_id: destId,
       departure_date: departDate,
       passenger,
+      seat_class: seatClass,
     });
     fetchFlights();
   };
@@ -119,7 +173,7 @@ export default function PesanTiketPage() {
     // Filter by Airline
     if (airline !== "Semua") {
       result = result.filter((f) =>
-        f.airline_name?.toLowerCase().includes(airline.toLowerCase())
+        f.airline.name?.toLowerCase().includes(airline.toLowerCase())
       );
     }
 
@@ -136,26 +190,16 @@ export default function PesanTiketPage() {
 
     // Sort
     if (sort === "Termurah") {
-      result.sort(
-        (a, b) =>
-          (a.flight_classes?.[0]?.price || 0) -
-          (b.flight_classes?.[0]?.price || 0)
-      );
-    } else if (sort === "Tercepat") {
       result.sort((a, b) => {
-        const durA =
-          new Date(a.arrival_time).getTime() -
-          new Date(a.departure_time).getTime();
-        const durB =
-          new Date(b.arrival_time).getTime() -
-          new Date(b.departure_time).getTime();
-        return durA - durB;
+        const priceA = parseFloat(a.flight_classes?.[0]?.price || "0");
+        const priceB = parseFloat(b.flight_classes?.[0]?.price || "0");
+        return priceA - priceB;
       });
+    } else if (sort === "Tercepat") {
+      result.sort((a, b) => a.total_duration_minutes - b.total_duration_minutes);
     } else if (sort === "Paling Awal") {
-      result.sort(
-        (a, b) =>
-          new Date(a.departure_time).getTime() -
-          new Date(b.departure_time).getTime()
+      result.sort((a, b) =>
+        new Date(a.departure_time).getTime() - new Date(b.departure_time).getTime()
       );
     }
 
@@ -208,15 +252,14 @@ export default function PesanTiketPage() {
               className="px-4 py-2 bg-gray-100 rounded-full text-sm outline-none"
             />
 
-            <select
-              value={passenger}
-              onChange={(e) => setPassenger(e.target.value)}
-              className="px-4 py-2 bg-gray-100 rounded-full text-sm outline-none"
-            >
-              <option value="1">1 Penumpang</option>
-              <option value="2">2 Penumpang</option>
-              <option value="3">3 Penumpang</option>
-            </select>
+            <PassengerClassSelector
+              initialPassenger={parseInt(passenger)}
+              initialSeatClass={seatClass}
+              onSave={(p, s) => {
+                setPassenger(p.toString());
+                setSeatClass(s);
+              }}
+            />
 
             <button
               onClick={handleSearch}
@@ -266,61 +309,13 @@ export default function PesanTiketPage() {
               Tidak ada penerbangan ditemukan.
             </div>
           ) : (
-            filteredFlights.map((f, i) => (
-              <div
-                key={i}
-                className="bg-white rounded-xl shadow flex items-center justify-between p-5"
-              >
-                <div className="flex items-center gap-4 w-1/3">
-                  <div className="text-3xl">✈️</div>
-                  <div>
-                    <p className="font-semibold">
-                      {f.airline_name} | {f.flight_code}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {f.departure_time
-                        ? new Date(f.departure_time).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })
-                        : ""}{" "}
-                      →{" "}
-                      {f.arrival_time
-                        ? new Date(f.arrival_time).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })
-                        : ""}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="text-sm text-gray-600 w-1/3 text-center">
-                  <p>{f.total_duration}</p>
-                  <p>
-                    {f.transit_count === 0
-                      ? "Langsung"
-                      : `${f.transit_count} Transit`}
-                  </p>
-                </div>
-
-                <div className="w-1/3 text-right">
-                  <p className="text-sm">ECONOMY</p>
-                  <p className="font-bold text-red-600">
-                    IDR {f.flight_classes?.[0]?.price?.toLocaleString()}
-                  </p>
-                  <button
-                    onClick={() =>
-                      navigate("/checkout", {
-                        state: { flight: f, passengers: parseInt(passenger) },
-                      })
-                    }
-                    className="mt-2 px-5 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-                  >
-                    Pilih
-                  </button>
-                </div>
-              </div>
+            filteredFlights.map((f) => (
+              <FlightCard
+                key={f.id}
+                flight={f}
+                seatClass={seatClass}
+                passenger={passenger}
+              />
             ))
           )}
         </section>

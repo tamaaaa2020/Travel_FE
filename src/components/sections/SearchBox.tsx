@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { FiSearch, FiMapPin, FiUsers } from "react-icons/fi";
+import { FiSearch, FiMapPin } from "react-icons/fi";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../lib/axios";
+import { PassengerClassSelector } from "../ui/PassengerClassSelector";
 
 /* =======================
    ANIMATION VARIANTS
@@ -51,6 +52,7 @@ export const SearchBox: React.FC = () => {
   const [departDate, setDepartDate] = useState("");
   const [returnDate, setReturnDate] = useState("");
   const [passenger, setPassenger] = useState("1");
+  const [seatClass, setSeatClass] = useState("economy");
 
   useEffect(() => {
     const fetchAirports = async () => {
@@ -72,6 +74,7 @@ export const SearchBox: React.FC = () => {
     if (destId) params.append("destination_airport_id", destId);
     if (departDate) params.append("departure_date", departDate);
     if (passenger) params.append("passenger", passenger);
+    if (seatClass) params.append("seat_class", seatClass);
 
     navigate({
       pathname: "/pesan-tiket",
@@ -171,19 +174,18 @@ export const SearchBox: React.FC = () => {
 
         {/* PENUMPANG */}
         <motion.div
-          className="flex items-center gap-2 bg-gray-100 px-3 py-3 rounded-xl"
           variants={itemVariants}
         >
-          <FiUsers className="text-red-500 text-xl" />
-          <select 
-            value={passenger}
-            onChange={(e) => setPassenger(e.target.value)}
-            className="bg-transparent w-full text-sm outline-none"
-          >
-            <option value="1">1 Penumpang</option>
-            <option value="2">2 Penumpang</option>
-            <option value="3">3 Penumpang</option>
-          </select>
+          <PassengerClassSelector
+            initialPassenger={parseInt(passenger)}
+            initialSeatClass={seatClass}
+            onSave={(p, s) => {
+              setPassenger(p.toString());
+              setSeatClass(s);
+            }}
+            className="w-full"
+            triggerClassName="bg-gray-100 px-3 py-3 rounded-xl w-full"
+          />
         </motion.div>
       </motion.div>
 
