@@ -8,6 +8,7 @@ interface PassengerClassSelectorProps {
   onSave: (passenger: number, seatClass: string) => void;
   className?: string;
   triggerClassName?: string;
+  variant?: "default" | "compact";
 }
 
 export const PassengerClassSelector: React.FC<PassengerClassSelectorProps> = ({
@@ -16,6 +17,7 @@ export const PassengerClassSelector: React.FC<PassengerClassSelectorProps> = ({
   onSave,
   className = "",
   triggerClassName = "bg-gray-100 px-4 py-2 rounded-full",
+  variant = "default",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -106,15 +108,12 @@ export const PassengerClassSelector: React.FC<PassengerClassSelectorProps> = ({
 
   // Helper untuk menampilkan teks ringkasan
   const getSummaryText = () => {
-    const parts = [];
-    parts.push(`${adults} Dewasa`);
-    if (children > 0) parts.push(`${children} Anak`);
-    if (infants > 0) parts.push(`${infants} Bayi`);
-    
+    const totalPassengers = adults + children;
     const classLabel = getClassLabel(seatClass);
-    
-    // Join parts and append class label
-    return `${parts.join(", ")}, ${classLabel}`;
+    if (variant === "compact") {
+        return `${totalPassengers} Penumpang, ${classLabel}`;
+    }
+    return `${totalPassengers}, ${classLabel}`;
   };
 
   const getClassLabel = (cls: string) => {
@@ -132,10 +131,14 @@ export const PassengerClassSelector: React.FC<PassengerClassSelectorProps> = ({
       {/* TRIGGER BUTTON */}
       <div
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-2 cursor-pointer hover:bg-gray-200 transition-colors ${triggerClassName}`}
+        className={
+          variant === "compact"
+            ? `cursor-pointer transition-colors hover:text-red-600 whitespace-nowrap ${triggerClassName}`
+            : `flex items-center gap-2 cursor-pointer hover:bg-gray-200 transition-colors ${triggerClassName}`
+        }
       >
-        <FiUsers className="text-red-500 text-lg" />
-        <span className="text-sm text-gray-700 font-medium truncate select-none">
+        {variant === "default" && <FiUsers className="text-red-500 text-lg" />}
+        <span className={variant === "compact" ? "font-medium text-gray-900" : "text-sm text-gray-700 font-medium truncate select-none"}>
           {getSummaryText()}
         </span>
       </div>

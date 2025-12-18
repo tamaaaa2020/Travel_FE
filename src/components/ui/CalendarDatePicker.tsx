@@ -8,11 +8,12 @@ interface Props {
   className?: string;
   triggerClassName?: string;
   label?: string;
+  variant?: "default" | "compact";
 }
 const pad = (n: number) => (n < 10 ? `0${n}` : `${n}`);
 const toISO = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 const parseISO = (s?: string) => (s ? new Date(`${s}T00:00:00`) : new Date());
-export const CalendarDatePicker: React.FC<Props> = ({ value, min, onChange, disabled, className, triggerClassName, label }) => {
+export const CalendarDatePicker: React.FC<Props> = ({ value, min, onChange, disabled, className, triggerClassName, label, variant = "default" }) => {
   const [open, setOpen] = useState(false);
   const selected = parseISO(value);
   const minDate = parseISO(min);
@@ -55,18 +56,24 @@ export const CalendarDatePicker: React.FC<Props> = ({ value, min, onChange, disa
   };
   return (
     <div className={className} ref={ref}>
-      <label className="block text-xs text-gray-500 mb-1 ml-1 font-medium">{label || "Tanggal"}</label>
+      {variant === "default" && <label className="block text-xs text-gray-500 mb-1 ml-1 font-medium" style={{textAlign: "left"}}>{label || "Tanggal"}</label>}
       <button
         type="button"
         disabled={disabled}
         onClick={() => setOpen((o) => !o)}
-        className={`flex items-center bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 w-full justify-between ${disabled ? "opacity-50 cursor-not-allowed" : "hover:border-red-400 hover:bg-white"} ${triggerClassName || ""}`}
+        className={
+          variant === "compact"
+            ? `flex items-center gap-2 cursor-pointer transition-colors hover:text-red-600 whitespace-nowrap ${disabled ? "opacity-50 cursor-not-allowed" : ""} ${triggerClassName || ""}`
+            : `flex items-center bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 w-full justify-between ${disabled ? "opacity-50 cursor-not-allowed" : "hover:border-red-400 hover:bg-white"} ${triggerClassName || ""}`
+        }
       >
         <div className="flex items-center">
-          <FiCalendar className="text-gray-400 mr-3 text-lg" />
-          <span className="text-gray-700 font-medium">{value ? parseISO(value).toLocaleDateString("en-US", { day: "2-digit", month: "short", year: "numeric" }) : "Pick a date"}</span>
-        </div>
-        <span className="text-xs text-gray-400">▼</span>
+          {variant === "default" && <FiCalendar className="text-gray-400 mr-3 text-lg" />}
+           <span className={variant === "compact" ? "font-medium text-gray-900" : "text-gray-700 font-medium"}>
+             {value ? parseISO(value).toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "short", year: "2-digit" }) : "Pilih Tanggal"}
+           </span>
+         </div>
+        {variant === "default" && <span className="text-xs text-gray-400">▼</span>}
       </button>
       {open && !disabled && (
         <div className="absolute z-30 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-gray-100">

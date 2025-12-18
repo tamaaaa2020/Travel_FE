@@ -24,7 +24,6 @@ export const FlightDetailDropdown: React.FC<FlightDetailProps> = ({ flight, seat
 
   return (
     <div className="mt-4 border-t pt-6">
-      <div className="text-xs text-gray-600 mb-4">Info transit disini</div>
       {legs.map((leg: any, index: number) => (
         <React.Fragment key={leg.id || index}>
           <LegDetail leg={leg} seatClass={seatClass} />
@@ -59,71 +58,77 @@ const LegDetail = ({ leg, seatClass }: { leg: any, seatClass: string }) => {
   const formatDate = (date: Date) => date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
 
   return (
-    <div className="flex gap-4 relative min-h-[300px]">
+    <div className="flex gap-4 relative min-h-[180px] mb-8" style={{marginLeft: '50px'}}>
       {/* 1. TIME COLUMN */}
-      <div className="flex flex-col justify-between text-right min-w-[80px]">
+      <div className="flex flex-col text-right min-w-[50px] pt-1">
          {/* Departure Time */}
-         <div>
-            <div className="text-base font-bold text-gray-900">{formatTime(depTime)}</div>
-            <div className="text-xs text-gray-500">{formatDate(depTime)}</div>
+         <div className="mb-[60px]">
+            <div className="text-[14px] font-semibold text-black">{formatTime(depTime)}</div>
+            <div className="text-[12px] font-medium text-[#0000008a]">{formatDate(depTime)}</div>
          </div>
          
-         {/* Duration */}
-         <div className="text-xs text-gray-400 py-4">
-             {leg.duration_formatted}
-         </div>
-
+         {/* Duration (Absolute centered if possible, or just spaced) */}
+         
          {/* Arrival Time */}
-         <div>
-            <div className="text-base font-bold text-gray-900">{formatTime(arrTime)}</div>
-            <div className="text-xs text-gray-500">{formatDate(arrTime)}</div>
+         <div className="mt-auto pb-1">
+            <div className="text-[14px] font-semibold text-black">{formatTime(arrTime)}</div>
+            <div className="text-[12px] font-medium text-[#0000008a]">{formatDate(arrTime)}</div>
          </div>
       </div>
 
       {/* 2. LINE COLUMN */}
-      <div className="flex flex-col items-center w-8 relative">
+      <div className="flex flex-col items-center w-[20px] relative pt-2">
          {/* Top Circle (Hollow) */}
-         <div className="w-3.5 h-3.5 rounded-full border-2 border-red-500 bg-white z-10 mt-1.5"></div>
+         <div className="w-[12px] h-[12px] rounded-full border border-[#f70101] bg-white z-10"></div>
          
          {/* Vertical Line */}
-         <div className="w-0.5 flex-1 bg-gray-200 -my-1"></div>
+         <div className="w-[1px] bg-[#d9d9d9] absolute top-[12px] bottom-[12px] left-1/2 -translate-x-1/2"></div>
+
+         {/* Duration Text floating left of line center - handled in time col or here? 
+             Design has duration 1j 55m aligned with center of line. 
+         */}
+         <div className="absolute top-1/2 -translate-y-1/2 -left-[80px] w-[70px] text-right">
+             <span className="text-[12px] font-medium text-[#0000008a]">{leg.duration_formatted}</span>
+         </div>
 
          {/* Bottom Circle (Filled) */}
-         <div className="w-3.5 h-3.5 rounded-full bg-red-500 border-2 border-red-500 z-10 mb-1.5"></div>
+         <div className="w-[12px] h-[12px] rounded-full bg-[#f70101] z-10 mt-auto"></div>
       </div>
 
       {/* 3. DETAILS COLUMN */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col pt-1">
         {/* DEPARTURE INFO */}
-        <div className="mb-8">
-          <div className="font-bold text-gray-900 text-sm">{originCity} ({originCode})</div>
-          <div className="text-xs text-gray-500">{originAirport}</div>
-          <div className="text-xs text-gray-500">Terminal 1A</div>
+        <div className="mb-[30px]">
+          <div className="text-[14px] font-semibold text-black mb-1">{originCity} ({originCode})</div>
+          <div className="text-[12px] font-medium text-[#0000008a]">{originAirport}</div>
+          <div className="text-[12px] font-medium text-[#0000008a]">Terminal 1A</div>
         </div>
 
         {/* AIRLINE INFO */}
-        <div className="mb-8 pl-4">
-           <div className="flex items-center gap-3">
-             <img 
-               src={leg.airline?.logo_url} 
-               alt={leg.airline?.name}
-               className="w-8 h-8 object-contain"
-               onError={(e) => {
-                 e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M5 13l4 4L19 7'/%3E%3C/svg%3E";
-               }}
-             />
-             <div>
-                <div className="font-bold text-gray-900 text-sm">{leg.airline?.name}</div>
-                <div className="text-xs text-gray-500 font-medium">{leg.flight_number} • {seatClass}</div>
+        <div className="mb-[30px] flex items-center gap-3">
+             <div className="flex flex-col">
+                <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[14px] font-semibold text-black">{leg.airline?.name}</span>
+                    <img 
+                    src={leg.airline?.logo_url} 
+                    alt={leg.airline?.name}
+                    className="w-[20px] h-[20px] object-contain"
+                    onError={(e) => {
+                        e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M5 13l4 4L19 7'/%3E%3C/svg%3E";
+                    }}
+                    />
+                </div>
+                <div className="text-[12px] font-medium text-black">
+                    {leg.flight_number} • {seatClass}
+                </div>
              </div>
-           </div>
         </div>
  
         {/* ARRIVAL INFO */}
         <div className="mt-auto">
-          <div className="font-bold text-gray-900 text-sm">{destCity} ({destCode})</div>
-          <div className="text-xs text-gray-500">{destAirport}</div>
-          <div className="text-xs text-gray-500">Terminal Domestic</div>
+          <div className="text-[14px] font-semibold text-black mb-1">{destCity} ({destCode})</div>
+          <div className="text-[12px] font-medium text-[#0000008a]">{destAirport}</div>
+          <div className="text-[12px] font-medium text-[#0000008a]">Terminal Domestic</div>
         </div>
       </div>
     </div>

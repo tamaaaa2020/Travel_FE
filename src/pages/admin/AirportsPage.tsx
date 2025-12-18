@@ -55,6 +55,16 @@ export default function AirportsPage() {
   };
 
   const handleSubmit = async () => {
+    // Validasi Sederhana
+    if (!form.code || form.code.length !== 3) {
+      alert("Kode Airport harus terdiri dari 3 huruf (contoh: CGK).");
+      return;
+    }
+    if (!form.airport_name || !form.city_name) {
+      alert("Nama Airport dan Kota wajib diisi.");
+      return;
+    }
+
     try {
       if (editing) {
         // EDIT (PUT /admin/airports/:id)
@@ -65,9 +75,11 @@ export default function AirportsPage() {
       }
       fetchAirports();
       setShowModal(false);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to save airport", err);
-      alert("Gagal menyimpan data. Pastikan Anda login sebagai Admin.");
+      // Tampilkan pesan error dari backend jika ada
+      const msg = err.response?.data?.error || err.response?.data?.message || "Gagal menyimpan data.";
+      alert(msg);
     }
   };
 

@@ -191,6 +191,10 @@ export default function PesanTiketPage() {
     setDestId(temp);
   };
 
+  const toggleTripType = () => {
+    setTripType((prev) => (prev === "one-way" ? "round-trip" : "one-way"));
+  };
+
   // 5. Filter Logic
   const filteredFlights = useMemo(() => {
     let result = [...flights];
@@ -244,121 +248,143 @@ export default function PesanTiketPage() {
     <div className="min-h-screen bg-gray-100">
       <NavPesanTiket />
 
-      <div className="pt-24 pb-10">
-        {/* SEARCH SECTION */}
-        <div className="max-w-7xl mx-auto px-6 mb-8">
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            {/* TRIP TYPE TOGGLE */}
-            <div className="flex gap-6 mb-6">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input 
-                  type="radio" 
-                  name="tripType" 
-                  checked={tripType === "one-way"} 
-                  onChange={() => setTripType("one-way")}
-                  className="w-4 h-4 text-red-500 focus:ring-red-500"
-                />
-                <span className="font-medium text-gray-700">Sekali Jalan</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input 
-                  type="radio" 
-                  name="tripType" 
-                  checked={tripType === "round-trip"} 
-                  onChange={() => setTripType("round-trip")}
-                  className="w-4 h-4 text-red-500 focus:ring-red-500"
-                />
-                <span className="font-medium text-gray-700">Pulang Pergi</span>
-              </label>
-            </div>
+      <div className="pt-24 pb-5 flex justify-center" style={{marginBottom:"0"}}>
+        {/* COMPACT SEARCH SECTION - FRAME 77 */}
+        <div 
+          className="bg-white rounded-xl shadow flex items-center gap-0 relative"
+          style={{
+            width: "1170px",
+            height: "57px",
+            padding: "9px 11px 8px 20px",
+            borderRadius: "12px",
+            boxShadow: "0px 2px 3px 0px rgba(0,0,0,0.1)", 
+          }}
+        >
+          {/* SEARCH ICON - elements */}
+          <div className="flex-shrink-0" style={{width: "21px", height: "21px"}}>
+            <FiSearch className="w-full h-full text-black transform" /> 
+          </div>
 
-            {/* SEARCH INPUTS GRID */}
-            <div className="grid grid-cols-12 gap-4 items-end">
-              {/* FROM & TO (Col 1-5) */}
-              <div className="col-span-12 md:col-span-5 grid grid-cols-[1fr,auto,1fr] gap-2 items-center relative">
-                {/* FROM */}
-                <AirportSelector
-                  label="Dari"
-                  placeholder="Jakarta, JKTC"
-                  airports={airports}
-                  value={originId}
-                  onChange={setOriginId}
-                  icon={<FiAirplay className="rotate-[-90deg]" />}
-                />
+          {/* ORIGIN - jakartaJktc */}
+          <div className="flex-shrink-0" style={{marginLeft: "18px", width: "100px"}}> 
+             {/* Adjusted width to fit content better than 109px if needed, or stick to SCSS 109px */}
+            <AirportSelector
+              placeholder="Jakarta, JKTC"
+              airports={airports}
+              value={originId}
+              onChange={setOriginId}
+              variant="compact"
+              triggerClassName="font-medium text-[15px] text-black leading-6 truncate w-full p-0"
+            />
+          </div>
 
-                {/* SWAP BUTTON */}
-                <button 
-                  onClick={handleSwapAirports}
-                  className="w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-md mt-6 mx-1 z-10"
-                >
-                  <FiRepeat className="text-sm" />
-                </button>
+          {/* SWAP - frame12 */}
+          <button 
+            onClick={handleSwapAirports}
+            className="flex items-center justify-center bg-white"
+            style={{
+              marginLeft: "19px",
+              width: "32px", // 17px icon + padding approx
+              height: "32px",
+              borderRadius: "12px",
+              boxShadow: "0px 2px 3px 0px #00000040",
+              padding: "7px", // from SCSS 7px 8px 8px 7px
+            }}
+          >
+            <FiRepeat className="text-black w-[17px] h-[17px]" />
+          </button>
 
-                {/* TO */}
-                <AirportSelector
-                  label="Ke"
-                  placeholder="Denpasar-Bali, DPS"
-                  airports={airports}
-                  value={destId}
-                  onChange={setDestId}
-                  icon={<FiAirplay className="rotate-[90deg]" />}
-                />
-              </div>
+          {/* DESTINATION - denpasarBaliDps */}
+          <div className="flex-shrink-0" style={{marginLeft: "19px", width: "110px"}}>
+             {/* SCSS says 150px */}
+            <AirportSelector
+              placeholder="Denpasar-Bali, DPS"
+              airports={airports}
+              value={destId}
+              onChange={setDestId}
+              variant="compact"
+              triggerClassName="font-medium text-[16px] text-black leading-6 truncate w-full p-0"
+            />
+          </div>
 
-              {/* DATES (Col 6-9) */}
-              <div className="col-span-12 md:col-span-4 grid grid-cols-2 gap-4">
+          {/* DIVIDER - a */}
+          <div className="flex items-center justify-center text-gray-300 font-thin text-[16px]" style={{marginLeft: "21px", width: "5px"}}>
+            |
+          </div>
+
+          {/* DATE & TRIP - rabu8Okt25SekaliJala */}
+          <div className="flex items-center flex-shrink-0 relative" style={{marginLeft: "21px", width: "350px"}}>
+             {/* SCSS says 220px, increased for round trip date */}
+            <CalendarDatePicker
+              value={departDate}
+              min={getTodayDate()}
+              onChange={setDepartDate}
+              variant="compact"
+              triggerClassName="font-medium text-[16px] text-black leading-6 p-0 gap-1"
+            />
+            
+            {tripType === "round-trip" && (
+                <>
+                <span className="mx-1 text-gray-400">-</span>
                 <CalendarDatePicker
-                  value={departDate}
-                  min={getTodayDate()}
-                  onChange={setDepartDate}
-                  className="relative"
-                  triggerClassName="group-focus-within:ring-2 group-focus-within:ring-red-100 group-focus-within:border-red-400"
-                  label="Pergi"
-                />
-                <div className={tripType === "one-way" ? "opacity-50 pointer-events-none" : ""}>
-                  <CalendarDatePicker
                     value={returnDate}
                     min={departDate || getTodayDate()}
                     onChange={setReturnDate}
-                    disabled={tripType === "one-way"}
-                    className="relative"
-                    triggerClassName={tripType === "round-trip" ? "group-focus-within:ring-2 group-focus-within:ring-red-100 group-focus-within:border-red-400" : ""}
+                    variant="compact"
                     label="Pulang"
-                  />
-                </div>
-              </div>
+                    triggerClassName="font-medium text-[16px] text-black leading-6 p-0 gap-1"
+                />
+                </>
+            )}
 
-              {/* PASSENGERS & SEARCH (Col 10-12) */}
-              <div className="col-span-12 md:col-span-3 flex gap-4">
-                {/* PASSENGER SELECTOR */}
-                <div className="relative w-full">
-                  <label className="block text-xs text-gray-500 mb-1 ml-1">Penumpang & Kelas</label>
-                  <PassengerClassSelector
-                    initialPassenger={parseInt(passenger)}
-                    initialSeatClass={seatClass}
-                    onSave={(p, s) => {
-                      setPassenger(p.toString());
-                      setSeatClass(s);
-                    }}
-                    className="w-full"
-                    triggerClassName="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 w-full justify-between hover:border-red-400 hover:bg-white"
-                  />
-                </div>
-
-                {/* SEARCH BUTTON */}
-                <button
-                  onClick={handleSearch}
-                  className="h-[50px] w-[50px] bg-red-600 text-white rounded-xl flex items-center justify-center hover:bg-red-700 transition-colors shadow-lg shadow-red-200 mt-auto mb-[1px]"
-                >
-                  <FiSearch className="text-2xl" />
-                </button>
-              </div>
-            </div>
+            <button 
+                onClick={toggleTripType}
+                className="font-medium text-[16px] text-black leading-6 whitespace-nowrap ml-1 hover:text-red-600 transition-colors"
+            >
+              ({tripType === "one-way" ? "Sekali Jalan" : "Pulang Pergi"})
+            </button>
           </div>
-        </div>
 
-        {/* FILTER & LIST (Existing Content) */}
-        <section className="max-w-7xl mx-auto px-6 py-4 flex gap-3 flex-wrap">
+          {/* DIVIDER - a */}
+          <div className="flex items-center justify-center text-gray-300 font-thin text-[16px]" style={{marginLeft: "21px", width: "5px"}}>
+            |
+          </div>
+
+          {/* PASSENGER - a1PenumpangEkonomi */}
+          <div className="flex-shrink-0" style={{marginLeft: "21px", width: "200px"}}>
+             {/* SCSS says 185px */}
+            <PassengerClassSelector
+              initialPassenger={parseInt(passenger)}
+              initialSeatClass={seatClass}
+              onSave={(p, s) => {
+                setPassenger(p.toString());
+                setSeatClass(s);
+              }}
+              variant="compact"
+              triggerClassName="font-medium text-[16px] text-black leading-6 truncate w-full p-0 bg-transparent"
+            />
+          </div>
+
+          {/* SEARCH BUTTON - frame78 */}
+          <button
+            onClick={handleSearch}
+            className="flex items-center justify-center bg-red-100 hover:bg-red-200 transition-colors ml-auto"
+            style={{
+              marginLeft: "auto", // SCSS says 142px from prev element, but flex usually auto
+              borderRadius: "8px",
+              padding: "8px 50px",
+              height: "40px", // derived from padding + line-height? SCSS doesn't specify height explicitly for button frame, only padding.
+            }}
+          >
+            <span className="font-medium text-[16px] text-[#f70101] leading-6 text-center">
+              Cari
+            </span>
+          </button>
+        </div>
+      </div>
+
+      {/* FILTER & LIST (Existing Content) */}
+        <section className="max-w-7xl mx-auto px-6 flex gap-3 flex-wrap" style={{marginLeft:"2rem", marginRight:"2rem", paddingBottom:"1rem"}}>
           <FilterSelect
             icon={<FiShuffle />}
             value={sort}
@@ -385,7 +411,7 @@ export default function PesanTiketPage() {
           />
         </section>
 
-        <section className="max-w-7xl mx-auto px-6 space-y-4">
+        <section className="max-w-7xl mx-auto px-6 space-y-4" style={{marginLeft:"2rem", marginRight:"2rem", paddingBottom:"2rem", width:"50rem"}}>
           {loading ? (
             <div className="text-center py-10">Loading flights...</div>
           ) : !originId || !destId ? (
@@ -407,14 +433,13 @@ export default function PesanTiketPage() {
             ))
           )}
         </section>
-      </div>
     </div>
   );
 }
 
 function FilterSelect({ icon, value, onChange, options }: any) {
   return (
-    <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow text-sm">
+    <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-[15px] shadow text-sm">
       {icon}
       <select
         value={value}

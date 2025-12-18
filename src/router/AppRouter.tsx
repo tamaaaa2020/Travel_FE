@@ -21,8 +21,6 @@ import ProfilePage from "../pages/ProfilePage";
 import DashboardPage from "../pages/admin/DashboardPage";
 import AirportsPage from "../pages/admin/AirportsPage";
 import FlightsPage from "../pages/admin/FlightsPage";
-import PaymentsPage from "../pages/admin/PaymentsPage";
-import UsersPage from "../pages/admin/UsersPage";
 
 /* ===== ROUTE GUARD ===== */
 import ProtectedRoute from "./ProtectedRoute";
@@ -60,8 +58,7 @@ export default function AppRouter() {
         <Route path="/admin/dashboard" element={<DashboardPage />} />
         <Route path="/admin/airports" element={<AirportsPage />} />
         <Route path="/admin/flights" element={<FlightsPage />} />
-        <Route path="/admin/payments" element={<PaymentsPage />} />
-        <Route path="/admin/users" element={<UsersPage />} />
+
       </Route>
 
       {/* ================= FALLBACK ================= */}

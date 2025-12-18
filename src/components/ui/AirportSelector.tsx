@@ -10,13 +10,15 @@ interface Airport {
 }
 
 interface AirportSelectorProps {
-  label: string;
+  label?: string;
   placeholder: string;
   airports: Airport[];
   value: string; // airport ID
   onChange: (id: string) => void;
   icon?: React.ReactNode;
   disabled?: boolean;
+  variant?: "default" | "compact";
+  triggerClassName?: string;
 }
 
 export const AirportSelector: React.FC<AirportSelectorProps> = ({
@@ -27,6 +29,8 @@ export const AirportSelector: React.FC<AirportSelectorProps> = ({
   onChange,
   icon,
   disabled = false,
+  variant = "default",
+  triggerClassName = "",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -61,31 +65,44 @@ export const AirportSelector: React.FC<AirportSelectorProps> = ({
 
   return (
     <div className="relative w-full" ref={containerRef}>
-      <label className="block text-xs text-gray-500 mb-1 ml-1 font-medium">
-        {label}
-      </label>
+      {variant === "default" && label && (
+        <label className="block text-xs text-gray-500 mb-1 ml-1 font-medium" style={{textAlign: "left"}}>
+          {label}
+        </label>
+      )}
       
       {/* TRIGGER BUTTON */}
       <div
         onClick={() => !disabled && setIsOpen(!isOpen)}
-        className={`flex items-center bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 cursor-pointer transition-all hover:bg-white hover:border-gray-300 ${
-          isOpen ? "ring-2 ring-red-100 border-red-400 bg-white" : ""
-        } ${disabled ? "opacity-50 cursor-not-allowed bg-gray-100" : ""}`}
+        className={
+          variant === "compact"
+            ? `cursor-pointer transition-colors hover:text-red-600 ${
+                disabled ? "opacity-50 cursor-not-allowed" : ""
+              } ${triggerClassName}`
+            : `flex items-center bg-gray-50 border border-gray-200 rounded-xl px-4 py-[15px] cursor-pointer transition-all hover:bg-white hover:border-gray-300 ${
+                isOpen ? "ring-2 ring-red-100 border-red-400 bg-white" : ""
+              } ${disabled ? "opacity-50 cursor-not-allowed bg-gray-100" : ""} ${triggerClassName}`
+        }
       >
-        <div className="text-gray-400 mr-3 text-lg">
-            {icon || <FiMapPin />}
-        </div>
+        {variant === "default" && (
+          <div className="text-gray-400 mr-3 text-lg">
+              {icon || <FiMapPin />}
+          </div>
+        )}
         
-        <div className="flex-1 overflow-hidden">
+        <div className={variant === "compact" ? "" : "flex-1 overflow-hidden"}>
           {selectedAirport ? (
-            <div className="flex flex-col items-start leading-tight">
-              <span className="font-semibold text-gray-800 truncate w-full text-left">
+            variant === "compact" ? (
+              <span className="font-medium text-gray-900 whitespace-nowrap">
                 {selectedAirport.city_name}, {selectedAirport.code}
               </span>
-              <span className="text-[10px] text-gray-500 truncate w-full text-left">
-                {selectedAirport.airport_name}
-              </span>
-            </div>
+            ) : (
+              <div className="flex flex-col items-start leading-tight">
+                <span className="font-semibold text-gray-800 truncate w-full text-left">
+                  {selectedAirport.city_name}, {selectedAirport.code}
+                </span>
+              </div>
+            )
           ) : (
             <span className="text-gray-400 font-medium">{placeholder}</span>
           )}

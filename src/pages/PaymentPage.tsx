@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { NavPesanTiket } from "../components/layout/NavPesanTiket";
 import { FiClock } from "react-icons/fi";
+import { MdFlight } from "react-icons/md";
 import FlightSummaryCard from "../components/ui/FlightSummaryCard";
 
 export default function PaymentPage() {
@@ -31,9 +32,18 @@ export default function PaymentPage() {
     } catch { return null; }
   })();
   // Resolve passenger info
-  const firstPassenger = order?.items?.[0]?.passengers?.[0] || null;
-  const passengerName = firstPassenger?.full_name || undefined;
-  const passportNumber = firstPassenger?.passport_number || undefined;
+  // Use same logic as PaymentMethodPage
+  const firstPassengerData = passengers?.[0]?.passenger;
+  const firstPassportData = passengers?.[0]?.passport;
+
+  const passengerName = firstPassengerData 
+    ? `${firstPassengerData.title} ${firstPassengerData.firstName} ${firstPassengerData.lastName}`
+    : (order?.items?.[0]?.passengers?.[0]?.full_name || "Mr (Adult) Abdul Hasyim");
+
+  const passportNumber = firstPassportData?.number 
+    || order?.items?.[0]?.passengers?.[0]?.passport_number 
+    || "H1234567";
+
   const meta = (() => { try { return JSON.parse(localStorage.getItem("payment_meta") || "null"); } catch { return null; } })();
   const passengersResolved = passengers || meta?.passengers || 1;
   const seatClassResolved = seat_class || meta?.seat_class || "economy";
@@ -96,8 +106,8 @@ export default function PaymentPage() {
           </div>
 
         {/* HOW TO PAY */}
-        <div className="bg-white rounded-xl shadow p-6">
-          <h3 className="font-semibold mb-3">Bagaimana Cara Membayar</h3>
+        <div style={{marginBottom:"3rem"}}>
+          <h3 className="font-semibold mb-3" style={{textAlign:"center"}}>Bagaimana Cara Membayar</h3>
           <p className="text-sm text-gray-600 leading-relaxed">
             Lorem ipsum dolor sit amet consectetur adipiscing elit. Quisque faucibus ex sapien vitae pellentesque sem placerat. In id cursus mi pretium tellus duis convallis. Tempus leo eu aenean sed diam urna tempor. Pulvinar vivamus fringilla lacus nec metus bibendum egestas. Iaculis massa nisl malesuada lacinia integer nunc posuere. Ut hendrerit semper vel class aptent taciti sociosqu. Ad litora torquent per conubia nostra inceptos himenaeos.
             <br /><br />
@@ -109,14 +119,100 @@ export default function PaymentPage() {
         {/* RIGHT */}
         <div className="h-fit" style={{top:'6rem',position:'relative'}}>
           {effectiveFlight ? (
-            <FlightSummaryCard
-              flight={effectiveFlight}
-              bookingId={bookingId}
-              passengers={passengersResolved}
-              seatClass={seatClassResolved}
-              passengerName={passengerName}
-              passportNumber={passportNumber}
-            />
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden w-full max-w-[405px]">
+              {/* Header with Red Curve Background (Vector 7 Style) */}
+              <div className="relative h-[75px] bg-[#fca5a5] overflow-hidden">
+                  <div className="absolute top-0 left-0 h-[75px] w-[74px]">
+                     {/* Vector 7 Red Shape */}
+                     <svg width="100%" height="100%" viewBox="0 0 74 75" preserveAspectRatio="none">
+                        <path d="M0 0H37C57.4345 0 74 16.5655 74 37V75H0V0Z" fill="#D90D19"/>
+                     </svg>
+                     <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center">
+                         <MdFlight className="text-white text-2xl -rotate-90" style={{rotate:"140deg", fontSize: "3rem"}}/>
+                     </div>
+                  </div>
+                  
+                  {/* Background Fill for the rest */}
+                  <div className="absolute top-0 left-0 w-full h-full -z-10 bg-[#FFE4E4]"></div>
+
+                  <div className="relative z-10 pl-[90px] flex flex-col justify-center h-full">
+                      <h3 className="text-[20px] font-semibold text-black leading-tight">Flight Summary</h3>
+                      <p className="text-[15px] text-[#00000094] font-medium">Booking ID : {bookingId || "-"}</p>
+                  </div>
+              </div>
+
+              <div className="p-4 pl-[14px] pr-[17px]">
+                {/* Route */}
+                <div className="flex items-center gap-2 mb-2 mt-2">
+                  <span className="text-[20px] font-medium text-black truncate">{effectiveFlight.origin.city_name} ({effectiveFlight.origin.code})</span>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mt-1">
+                     <path d="M16.01 11H4v2h12.01v3L20 12l-3.99-4v3z" fill="black"/>
+                  </svg>
+                  <span className="text-[20px] font-medium text-black truncate">{effectiveFlight.destination.city_name} ({effectiveFlight.destination.code})</span>
+                </div>
+
+                {/* Airline & Class */}
+                <div className="flex items-center gap-3 mb-5 pl-2">
+                    {effectiveFlight.airline.logo_url && (
+                        <div className="w-[43px] h-[46px] rounded-full border border-gray-100 flex items-center justify-center overflow-hidden">
+                            <img src={effectiveFlight.airline.logo_url} className="w-8 h-8 object-contain" />
+                        </div>
+                    )}
+                    <div className="flex items-center gap-2">
+                        <span className="text-[16px] font-medium text-[#00000073]">{effectiveFlight.airline.name}</span>
+                        <span className="w-1 h-1 rounded-full bg-gray-400"></span>
+                        <span className="text-[16px] font-medium text-[#00000073] capitalize">{seatClassResolved}</span>
+                    </div>
+                </div>
+
+                {/* Time Grid */}
+                <div className="flex justify-between items-start mb-6">
+                    {/* Departure */}
+                    <div className="flex flex-col items-center border border-[#061c3d1f] rounded-lg p-3 min-w-[110px]">
+                        <span className="text-[15px] font-medium text-black">{new Date(effectiveFlight.departure_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false })}</span>
+                        <span className="text-[14px] font-medium text-[#000000a8] text-center mt-1">
+                            {new Date(effectiveFlight.departure_time).toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" }).split(',')[0]}<br/>
+                            {new Date(effectiveFlight.departure_time).toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" }).split(',')[1]}
+                        </span>
+                    </div>
+
+                    {/* Duration */}
+                    <div className="flex flex-col items-center mt-3">
+                        <span className="text-[12px] font-medium text-black">{effectiveFlight.duration_formatted}</span>
+                        <span className="text-[13px] font-medium text-[#000000a8] mt-1">{effectiveFlight.transit_count === 0 ? "Langsung" : `${effectiveFlight.transit_count} Transit`}</span>
+                    </div>
+
+                    {/* Arrival */}
+                    <div className="flex flex-col items-center border border-[#061c3d1f] rounded-lg p-3 min-w-[110px]">
+                        <span className="text-[15px] font-medium text-black">{new Date(effectiveFlight.arrival_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false })}</span>
+                        <span className="text-[14px] font-medium text-[#000000a8] text-center mt-1">
+                            {new Date(effectiveFlight.arrival_time).toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" }).split(',')[0]}<br/>
+                            {new Date(effectiveFlight.arrival_time).toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" }).split(',')[1]}
+                        </span>
+                    </div>
+                </div>
+
+                {/* Divider */}
+                <div className="w-full h-[1px] bg-[#061c3d4a] mb-6 mx-auto" style={{width: "90%"}}></div>
+
+                {/* Passenger Details */}
+                <div className="pl-2">
+                    <h4 className="text-[16px] font-medium text-[#000000ab] mb-4">Passanger(s) Details</h4>
+                    <div className="flex items-center gap-4">
+                        <div className="w-[35px] h-[35px]">
+                             {/* Use SVG from design or similar icon */}
+                             <svg width="35" height="35" viewBox="0 0 24 24" fill="#555" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                             </svg>
+                        </div>
+                        <div>
+                            <p className="text-[11px] font-medium text-[#000000a8]">{passengerName}</p>
+                            <p className="text-[11px] font-medium text-[#000000a8]">Passport : {passportNumber}</p>
+                        </div>
+                    </div>
+                </div>
+              </div>
+            </div>
           ) : (
             <div className="bg-white rounded-xl shadow p-6">
               <div className="font-semibold mb-2">Flight Summary</div>

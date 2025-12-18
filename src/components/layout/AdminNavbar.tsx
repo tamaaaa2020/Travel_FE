@@ -29,6 +29,7 @@ const AdminNavbar: React.FC = () => {
                     <Link to="/tiket" className="text-gray-800 hover:text-black">Pesan Tiket</Link>
                     <Link to="/partner" className="text-gray-800 hover:text-black">Jadi Partner</Link>
                     <Link to="/riwayat" className="text-gray-800 hover:text-black">Riwayat Pemesanan</Link>
+                    
                 </nav>
 
                 {/* Right User Section */}
@@ -78,10 +79,6 @@ const AdminNavbar: React.FC = () => {
 
                     <Link to="/" className="block text-gray-800 font-medium" onClick={() => setOpenMobile(false)}>
                         Home
-                    </Link>
-
-                    <Link to="/tiket" className="block text-gray-800 font-medium" onClick={() => setOpenMobile(false)}>
-                        Pesan Tiket
                     </Link>
 
                     <Link to="/partner" className="block text-gray-800 font-medium" onClick={() => setOpenMobile(false)}>

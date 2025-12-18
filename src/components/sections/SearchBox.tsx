@@ -77,6 +77,7 @@ export const SearchBox: React.FC = () => {
   // Auto-load Defaults (Origin = 1, Date = Today) if empty
   useEffect(() => {
     if (!originId) setOriginId("1");
+    if(!destId) setDestId("2");
     if (!departDate) setDepartDate(getTodayDate());
   }, [originId, departDate]);
 
@@ -120,38 +121,45 @@ export const SearchBox: React.FC = () => {
 
   return (
     <motion.div
-      className="w-full max-w-7xl mx-auto bg-white shadow-xl rounded-3xl p-6 mt-6"
+      className="w-full max-w-[1378px] mx-auto bg-white shadow-xl rounded-[12px] pt-[34px] px-[36px] pb-[44px] mt-6"
       variants={containerVariants}
       initial="hidden"
       whileInView="show"
       viewport={{ once: true, amount: 0.4 }}
     >
       {/* =======================
-          TRAVEL MODE
+          TRAVEL MODE (Custom Radio)
       ======================= */}
       <motion.div
-        className="flex gap-6 mb-6 text-sm"
+        className="flex gap-10 mb-8 items-center"
         variants={itemVariants}
       >
-        <label className="flex items-center gap-2 cursor-pointer">
+        <label className="flex items-center gap-3 cursor-pointer group">
+          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${tripType === "one-way" ? "border-[#ed1c24]" : "border-gray-300"}`}>
+            {tripType === "one-way" && <div className="w-[10px] h-[10px] rounded-full bg-[#ed1c24]" />}
+          </div>
           <input 
             type="radio" 
             name="tripType" 
             checked={tripType === "one-way"} 
             onChange={() => setTripType("one-way")}
-            className="w-4 h-4 text-red-500 focus:ring-red-500"
+            className="hidden"
           />
-          <span className="font-medium text-gray-700">Sekali Jalan</span>
+          <span className="font-medium text-[20px] text-black">Sekali Jalan</span>
         </label>
-        <label className="flex items-center gap-2 cursor-pointer">
+
+        <label className="flex items-center gap-3 cursor-pointer group">
+          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${tripType === "round-trip" ? "border-[#ed1c24]" : "border-gray-300"}`}>
+             {tripType === "round-trip" && <div className="w-[10px] h-[10px] rounded-full bg-[#ed1c24]" />}
+          </div>
           <input 
             type="radio" 
             name="tripType" 
             checked={tripType === "round-trip"} 
             onChange={() => setTripType("round-trip")}
-            className="w-4 h-4 text-red-500 focus:ring-red-500"
+            className="hidden"
           />
-          <span className="font-medium text-gray-700">Pulang Pergi</span>
+          <span className="font-medium text-[20px] text-black">Pulang Pergi</span>
         </label>
       </motion.div>
 
@@ -159,68 +167,83 @@ export const SearchBox: React.FC = () => {
           FORM GRID
       ======================= */}
       <motion.div
-        className="grid grid-cols-12 gap-4 items-end"
+        className="flex flex-wrap lg:flex-nowrap gap-4 items-end"
         variants={containerVariants}
       >
-        {/* FROM & TO (Col 1-5) */}
-        <div className="col-span-12 md:col-span-5 grid grid-cols-[1fr,auto,1fr] gap-2 items-center relative">
-          {/* FROM */}
-          <AirportSelector
-            label="Dari"
-            placeholder="Jakarta, JKTC"
-            airports={airports}
-            value={originId}
-            onChange={setOriginId}
-            icon={<FiAirplay className="rotate-[-90deg]" />}
-          />
+        {/* FROM & TO SECTION */}
+        <div className="flex-1 flex items-end gap-2 relative min-w-[300px] lg:min-w-[420px]">
+          <div className="flex-1">
+             <AirportSelector
+                label="Dari"
+                placeholder="Jakarta, JKTC"
+                airports={airports}
+                value={originId}
+                onChange={setOriginId}
+                icon={<FiAirplay className="rotate-[-90deg] text-black" />}
+                className="w-full"
+                triggerClassName="bg-[#f8f8f8] border-none rounded-[12px] h-[48px] px-4 text-[16px] font-medium text-black placeholder:text-black"
+                labelClassName="text-[16px] text-[#00000099] mb-2 block font-normal"
+              />
+          </div>
 
           {/* SWAP BUTTON */}
           <button 
             onClick={handleSwapAirports}
-            className="w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-md mt-6 mx-1 z-10"
+            className="w-[48px] h-[48px] bg-[#f70101] text-white rounded-[12px] flex items-center justify-center hover:bg-red-700 transition-colors shrink-0 mb-[0px]"
           >
-            <FiRepeat className="text-sm" />
+            <FiRepeat className="text-xl" />
           </button>
 
-          {/* TO */}
-          <AirportSelector
-            label="Ke"
-            placeholder="Denpasar-Bali, DPS"
-            airports={airports}
-            value={destId}
-            onChange={setDestId}
-            icon={<FiAirplay className="rotate-[90deg]" />}
-          />
-        </div>
-
-        {/* DATES (Col 6-9) */}
-        <div className="col-span-12 md:col-span-4 grid grid-cols-2 gap-4">
-          <CalendarDatePicker
-            value={departDate}
-            min={getTodayDate()}
-            onChange={setDepartDate}
-            className="relative"
-            triggerClassName="group-focus-within:ring-2 group-focus-within:ring-red-100 group-focus-within:border-red-400"
-            label="Pergi"
-          />
-          <div className={tripType === "one-way" ? "opacity-50 pointer-events-none" : ""}>
-            <CalendarDatePicker
-              value={returnDate}
-              min={departDate || getTodayDate()}
-              onChange={setReturnDate}
-              disabled={tripType === "one-way"}
-              className="relative"
-              triggerClassName={tripType === "round-trip" ? "group-focus-within:ring-2 group-focus-within:ring-red-100 group-focus-within:border-red-400" : ""}
-              label="Pulang"
-            />
+          <div className="flex-1">
+             <AirportSelector
+                label="Ke"
+                placeholder="Denpasar-Bali, DPS"
+                airports={airports}
+                value={destId}
+                onChange={setDestId}
+                icon={<FiAirplay className="rotate-[90deg] text-black" />}
+                className="w-full"
+                triggerClassName="bg-[#f8f8f8] border-none rounded-[12px] h-[48px] px-4 text-[16px] font-medium text-black placeholder:text-black"
+                labelClassName="text-[16px] text-[#00000099] mb-2 block font-normal"
+              />
           </div>
         </div>
 
-        {/* PASSENGERS & SEARCH (Col 10-12) */}
-        <div className="col-span-12 md:col-span-3 flex gap-4">
-          {/* PASSENGER SELECTOR */}
-          <div className="relative w-full">
-            <label className="block text-xs text-gray-500 mb-1 ml-1 font-medium">Penumpang & Kelas</label>
+        {/* DATES SECTION */}
+        <div className="flex gap-4 min-w-[300px] lg:min-w-[350px] flex-1">
+           <div className="flex-1">
+              <CalendarDatePicker
+                value={departDate}
+                min={getTodayDate()}
+                onChange={setDepartDate}
+                label="Pergi"
+                className="w-[15rem]"
+                triggerClassName="bg-[#f8f8f8] border-none rounded-[12px] h-[48px] px-4 text-[16px] font-medium text-black w-[15rem] justify-start gap-3"
+                labelClassName="text-[16px] text-[#00000099] mb-2 block font-normal"
+                icon={<FiCalendar className="text-black text-lg" />}
+              />
+           </div>
+           
+           <div className={`flex-1 ${tripType === "one-way" ? "" : ""}`}>
+              <CalendarDatePicker
+                value={returnDate}
+                min={departDate || getTodayDate()}
+                onChange={setReturnDate}
+                disabled={tripType === "one-way"}
+                label="Pulang"
+                placeholder={tripType === "one-way" ? "Pesan Pulang-Pergi" : "Pilih Tanggal"}
+                className="w-[15rem]"
+                triggerClassName={`bg-[#f8f8f8] border-none rounded-[12px] h-[48px] px-4 text-[16px] font-medium w-[15rem] justify-start gap-3 ${tripType === "one-way" ? "text-[#00000033]" : "text-black"}`}
+                labelClassName="text-[16px] text-[#00000099] mb-2 block font-normal"
+                icon={<FiCalendar className={`text-lg ${tripType === "one-way" ? "text-[#00000033]" : "text-black"}`} />}
+              />
+           </div>
+        </div>
+
+        {/* PASSENGERS & SEARCH */}
+        <div className="flex gap-4 flex-grow min-w-[280px] lg:min-w-[300px] flex-1">
+          <div className="flex-grow" style={{position: 'relative',left: '9rem'}}>
+            <label className="block text-xs text-gray-500 mb-1 ml-1 font-medium" style={{textAlign:"left"}}>Penumpang, Kelas</label>
             <PassengerClassSelector
               initialPassenger={parseInt(passenger)}
               initialSeatClass={seatClass}
@@ -229,14 +252,14 @@ export const SearchBox: React.FC = () => {
                 setSeatClass(s);
               }}
               className="w-full"
-              triggerClassName="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 w-full justify-between hover:border-red-400 hover:bg-white"
+              triggerClassName="bg-[#f8f8f8] border-none rounded-[12px] h-[48px] px-4 text-[16px] font-medium text-black w-[10rem] "
             />
           </div>
 
-          {/* SEARCH BUTTON */}
           <button
             onClick={handleSearch}
-            className="h-[50px] w-[50px] bg-red-600 text-white rounded-xl flex items-center justify-center hover:bg-red-700 transition-colors shadow-lg shadow-red-200 mt-auto mb-[1px]"
+            className="w-[48px] h-[48px] bg-[#f70101] text-white rounded-[12px] flex items-center justify-center hover:bg-red-700 transition-colors shrink-0 mb-[0px]"
+            style={{position: 'relative',top: '1rem', left: '1rem'}}
           >
             <FiSearch className="text-2xl" />
           </button>
