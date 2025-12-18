@@ -54,27 +54,67 @@ export const PassengerClassSelector: React.FC<PassengerClassSelectorProps> = ({
 
   const handleSave = () => {
     // Total passenger = Adult + Children (Infant usually sits on lap or handled differently)
-    // Tapi jika backend hanya terima total seat, maka Adult + Children.
     const total = adults + children;
     onSave(total > 0 ? total : 1, seatClass); // Minimal 1
     setIsOpen(false);
   };
 
-  const increment = (setter: React.Dispatch<React.SetStateAction<number>>, value: number) => {
-    setter(value + 1);
+  // VALIDATION RULES
+  // 1. Max 7 passengers (Adult + Child)
+  // 2. Max 4 infants
+  // 3. Infant must be <= Adult
+
+  const incrementAdult = () => {
+    if (adults + children < 7) {
+      setAdults(adults + 1);
+    }
   };
 
-  const decrement = (setter: React.Dispatch<React.SetStateAction<number>>, value: number, min: number = 0) => {
-    if (value > min) {
-      setter(value - 1);
+  const decrementAdult = () => {
+    // Adult cannot be less than 1
+    // Adult cannot be less than Infant
+    if (adults > 1 && adults > infants) {
+      setAdults(adults - 1);
+    }
+  };
+
+  const incrementChild = () => {
+    if (adults + children < 7) {
+      setChildren(children + 1);
+    }
+  };
+
+  const decrementChild = () => {
+    if (children > 0) {
+      setChildren(children - 1);
+    }
+  };
+
+  const incrementInfant = () => {
+    // Max 4 infants
+    // Infant <= Adult
+    if (infants < 4 && infants < adults) {
+      setInfants(infants + 1);
+    }
+  };
+
+  const decrementInfant = () => {
+    if (infants > 0) {
+      setInfants(infants - 1);
     }
   };
 
   // Helper untuk menampilkan teks ringkasan
   const getSummaryText = () => {
-    const total = adults + children + infants;
+    const parts = [];
+    parts.push(`${adults} Dewasa`);
+    if (children > 0) parts.push(`${children} Anak`);
+    if (infants > 0) parts.push(`${infants} Bayi`);
+    
     const classLabel = getClassLabel(seatClass);
-    return `${total} Passenger${total > 1 ? "s" : ""}, ${classLabel}`;
+    
+    // Join parts and append class label
+    return `${parts.join(", ")}, ${classLabel}`;
   };
 
   const getClassLabel = (cls: string) => {
@@ -108,30 +148,31 @@ export const PassengerClassSelector: React.FC<PassengerClassSelectorProps> = ({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="absolute top-full left-0 mt-2 w-[320px] bg-white rounded-xl shadow-2xl border border-gray-100 z-50 p-5"
+            className="absolute top-full right-0 mt-2 w-[350px] bg-white rounded-xl shadow-2xl border border-gray-100 z-50 p-5"
           >
-            <h3 className="font-bold text-lg mb-4 text-gray-800">Set Passenger & Class</h3>
+            <h3 className="font-bold text-lg mb-4 text-gray-800">Pilih Penumpang & Kelas</h3>
 
             {/* PASSENGER COUNTERS */}
             <div className="space-y-4 mb-6">
               {/* ADULT */}
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium text-gray-700">Adult</p>
-                  <p className="text-xs text-gray-400">(above 12 years old)</p>
+                  <p className="font-medium text-gray-700">Dewasa</p>
+                  <p className="text-xs text-gray-400">(12 tahun ke atas)</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <button
-                    onClick={() => decrement(setAdults, adults, 1)}
-                    className={`w-8 h-8 rounded-full border flex items-center justify-center transition-colors ${adults <= 1 ? "border-gray-200 text-gray-300" : "border-gray-400 text-red-500 hover:border-red-500"}`}
-                    disabled={adults <= 1}
+                    onClick={decrementAdult}
+                    className={`w-8 h-8 rounded-full border flex items-center justify-center transition-colors ${adults <= 1 || adults <= infants ? "border-gray-200 text-gray-300" : "border-gray-400 text-red-500 hover:border-red-500"}`}
+                    disabled={adults <= 1 || adults <= infants}
                   >
                     <FiMinus />
                   </button>
                   <span className="w-4 text-center font-medium">{adults}</span>
                   <button
-                    onClick={() => increment(setAdults, adults)}
-                    className="w-8 h-8 rounded-full border border-red-500 text-red-500 flex items-center justify-center hover:bg-red-50"
+                    onClick={incrementAdult}
+                    className={`w-8 h-8 rounded-full border flex items-center justify-center transition-colors ${adults + children >= 7 ? "border-gray-200 text-gray-300" : "border-gray-400 text-red-500 hover:border-red-500"}`}
+                    disabled={adults + children >= 7}
                   >
                     <FiPlus />
                   </button>
@@ -141,12 +182,12 @@ export const PassengerClassSelector: React.FC<PassengerClassSelectorProps> = ({
               {/* CHILDREN */}
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium text-gray-700">Children</p>
-                  <p className="text-xs text-gray-400">(2 - 11 years old)</p>
+                  <p className="font-medium text-gray-700">Anak</p>
+                  <p className="text-xs text-gray-400">(2 - 11 tahun)</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <button
-                    onClick={() => decrement(setChildren, children, 0)}
+                    onClick={decrementChild}
                     className={`w-8 h-8 rounded-full border flex items-center justify-center transition-colors ${children <= 0 ? "border-gray-200 text-gray-300" : "border-gray-400 text-red-500 hover:border-red-500"}`}
                     disabled={children <= 0}
                   >
@@ -154,8 +195,9 @@ export const PassengerClassSelector: React.FC<PassengerClassSelectorProps> = ({
                   </button>
                   <span className="w-4 text-center font-medium">{children}</span>
                   <button
-                    onClick={() => increment(setChildren, children)}
-                    className="w-8 h-8 rounded-full border border-red-500 text-red-500 flex items-center justify-center hover:bg-red-50"
+                    onClick={incrementChild}
+                    className={`w-8 h-8 rounded-full border flex items-center justify-center transition-colors ${adults + children >= 7 ? "border-gray-200 text-gray-300" : "border-gray-400 text-red-500 hover:border-red-500"}`}
+                    disabled={adults + children >= 7}
                   >
                     <FiPlus />
                   </button>
@@ -165,12 +207,12 @@ export const PassengerClassSelector: React.FC<PassengerClassSelectorProps> = ({
               {/* INFANT */}
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium text-gray-700">Infant</p>
-                  <p className="text-xs text-gray-400">(below 2 years old)</p>
+                  <p className="font-medium text-gray-700">Bayi</p>
+                  <p className="text-xs text-gray-400">(di bawah 2 tahun)</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <button
-                    onClick={() => decrement(setInfants, infants, 0)}
+                    onClick={decrementInfant}
                     className={`w-8 h-8 rounded-full border flex items-center justify-center transition-colors ${infants <= 0 ? "border-gray-200 text-gray-300" : "border-gray-400 text-red-500 hover:border-red-500"}`}
                     disabled={infants <= 0}
                   >
@@ -178,8 +220,9 @@ export const PassengerClassSelector: React.FC<PassengerClassSelectorProps> = ({
                   </button>
                   <span className="w-4 text-center font-medium">{infants}</span>
                   <button
-                    onClick={() => increment(setInfants, infants)}
-                    className="w-8 h-8 rounded-full border border-red-500 text-red-500 flex items-center justify-center hover:bg-red-50"
+                    onClick={incrementInfant}
+                    className={`w-8 h-8 rounded-full border flex items-center justify-center transition-colors ${infants >= 4 || infants >= adults ? "border-gray-200 text-gray-300" : "border-gray-400 text-red-500 hover:border-red-500"}`}
+                    disabled={infants >= 4 || infants >= adults}
                   >
                     <FiPlus />
                   </button>
@@ -190,10 +233,10 @@ export const PassengerClassSelector: React.FC<PassengerClassSelectorProps> = ({
             {/* CLASS SELECTION */}
             <div className="grid grid-cols-2 gap-3 mb-6">
               {[
-                { id: "economy", label: "Economy" },
-                { id: "business", label: "Business" },
-                { id: "premium_economy", label: "Premium Eco" },
-                { id: "first_class", label: "First" },
+                { id: "economy", label: "Ekonomi" },
+                { id: "business", label: "Bisnis" },
+                { id: "premium_economy", label: "Prem. Ekonomi" },
+                { id: "first_class", label: "First Class" },
               ].map((cls) => (
                 <button
                   key={cls.id}
@@ -212,9 +255,9 @@ export const PassengerClassSelector: React.FC<PassengerClassSelectorProps> = ({
             {/* SAVE BUTTON */}
             <button
               onClick={handleSave}
-              className="w-full py-3 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition-colors shadow-lg shadow-blue-200"
+              className="w-full py-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition-colors shadow-lg shadow-red-200"
             >
-              Save
+              Simpan
             </button>
           </motion.div>
         )}

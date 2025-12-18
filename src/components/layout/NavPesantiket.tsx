@@ -32,10 +32,6 @@ export const NavPesanTiket: React.FC = () => {
             Home
           </Link>
 
-          <Link to="/pesan-tiket" className={isActive("/pesan-tiket")}>
-            Pesan Tiket
-          </Link>
-
           <Link to="/partner" className={isActive("/partner")}>
             Jadi Partner
           </Link>

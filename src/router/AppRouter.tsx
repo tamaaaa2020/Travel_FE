@@ -11,6 +11,7 @@ import ForgotPasswordPage from "../pages/ForgotPasswordPage";
 import PesanTiketPage from "../pages/PesanTiketPage";
 import CheckoutPage from "../pages/CheckoutPage";
 import PaymentPage from "../pages/PaymentPage";
+import PaymentMethodPage from "../pages/PaymentMethodPage";
 import RiwayatPemesananPage from "../pages/RiwayatPemesananPage";
 
 /* ===== USER ===== */
@@ -41,6 +42,7 @@ export default function AppRouter() {
       <Route path="/pesan-tiket" element={<PesanTiketPage />} />
       <Route element={<ProtectedRoute />}>
         <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/payment-method" element={<PaymentMethodPage />} />
         <Route path="/payment" element={<PaymentPage />} />
       </Route>
 

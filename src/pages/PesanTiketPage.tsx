@@ -8,9 +8,12 @@ import {
   FiClock,
   FiAirplay,
   FiShuffle,
+  FiRepeat // Icon untuk swap
 } from "react-icons/fi";
 import { PassengerClassSelector } from "../components/ui/PassengerClassSelector";
+import { AirportSelector } from "../components/ui/AirportSelector";
 import { FlightCard } from "../components/ui/FlightCard";
+import { CalendarDatePicker } from "../components/ui/CalendarDatePicker";
 
 // Type definitions matching new BE structure
 interface Airport {
@@ -75,9 +78,11 @@ export default function PesanTiketPage() {
   const [loading, setLoading] = useState(false);
 
   // ===== SEARCH STATE =====
+  const [tripType, setTripType] = useState<"one-way" | "round-trip">("one-way");
   const [originId, setOriginId] = useState(searchParams.get("origin_airport_id") || "");
   const [destId, setDestId] = useState(searchParams.get("destination_airport_id") || "");
   const [departDate, setDepartDate] = useState(searchParams.get("departure_date") || "");
+  const [returnDate, setReturnDate] = useState("");
   const [passenger, setPassenger] = useState(searchParams.get("passenger") || "1");
   const [seatClass, setSeatClass] = useState(searchParams.get("seat_class") || "economy");
 
@@ -87,7 +92,10 @@ export default function PesanTiketPage() {
   const [airline, setAirline] = useState("Semua");
   const [time, setTime] = useState("Semua");
 
-  // 1. Fetch Airports & Initial Flights
+  // Helper: Get Today Date YYYY-MM-DD
+  const getTodayDate = () => new Date().toISOString().split('T')[0];
+
+  // 1. Fetch Airports & Initial Defaults
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -96,9 +104,6 @@ export default function PesanTiketPage() {
         if (airportRes.data && airportRes.data.data) {
           setAirports(airportRes.data.data);
         }
-
-        // Fetch Flights (Search or All)
-        fetchFlights();
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -106,11 +111,36 @@ export default function PesanTiketPage() {
     fetchData();
   }, []);
 
-  // 2. Fetch Flights Function
+  // 2. Auto-load Defaults (Origin = 1, Date = Today) if empty
+  useEffect(() => {
+    if (!originId) setOriginId("1");
+    if (!departDate) setDepartDate(getTodayDate());
+  }, [originId, departDate]);
+
+  // 3. Initial Flight Fetch if params exist
+  useEffect(() => {
+    if (searchParams.get("origin_airport_id") && searchParams.get("destination_airport_id")) {
+      fetchFlights();
+    }
+  }, []); // Run once on mount if params exist (handled by Auto-load logic too)
+
+  // 4. Fetch Flights Function
   const fetchFlights = async () => {
-    // Check if we have minimum search criteria (Origin & Destination)
-    if (!originId || !destId) {
-      setFlights([]);
+    // Validation
+    if (!originId) {
+      alert("Bandara asal tidak boleh kosong");
+      return;
+    }
+    if (!destId) {
+      alert("Bandara tujuan tidak boleh kosong");
+      return;
+    }
+    if (!departDate) {
+      alert("Tanggal pergi tidak boleh kosong");
+      return;
+    }
+    if (originId === destId) {
+      alert("Bandara asal dan tujuan tidak boleh sama");
       return;
     }
 
@@ -123,7 +153,6 @@ export default function PesanTiketPage() {
       if (seatClass) params.seat_class = seatClass;
 
       const res = await api.get("/flights", { params });
-      console.log("API Response:", res.data);
       
       if (res.data && res.data.data) {
         // Ensure flights match origin and destination exactly
@@ -132,7 +161,6 @@ export default function PesanTiketPage() {
           const destMatch = String(f.destination.id) === String(destId);
           return originMatch && destMatch;
         });
-        console.log("Filtered flights:", filtered);
         setFlights(filtered);
       } else {
         setFlights([]);
@@ -157,7 +185,13 @@ export default function PesanTiketPage() {
     fetchFlights();
   };
 
-  // 3. Filter Logic
+  const handleSwapAirports = () => {
+    const temp = originId;
+    setOriginId(destId);
+    setDestId(temp);
+  };
+
+  // 5. Filter Logic
   const filteredFlights = useMemo(() => {
     let result = [...flights];
 
@@ -210,67 +244,120 @@ export default function PesanTiketPage() {
     <div className="min-h-screen bg-gray-100">
       <NavPesanTiket />
 
-      <div className="pt-20">
-        {/* SEARCH */}
-        <section className="bg-white border-b">
-          <div className="max-w-7xl mx-auto px-6 py-4 flex flex-wrap gap-3 items-center">
-            <div className="flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-full text-sm">
-              <FiSearch />
-              {/* FROM */}
-              <select
-                value={originId}
-                onChange={(e) => setOriginId(e.target.value)}
-                className="bg-transparent outline-none w-36 appearance-none"
-              >
-                <option value="">Dari</option>
-                {airports.map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {a.city_name} ({a.code})
-                  </option>
-                ))}
-              </select>
-              →
-              {/* TO */}
-              <select
-                value={destId}
-                onChange={(e) => setDestId(e.target.value)}
-                className="bg-transparent outline-none w-36 appearance-none"
-              >
-                <option value="">Ke</option>
-                {airports.map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {a.city_name} ({a.code})
-                  </option>
-                ))}
-              </select>
+      <div className="pt-24 pb-10">
+        {/* SEARCH SECTION */}
+        <div className="max-w-7xl mx-auto px-6 mb-8">
+          <div className="bg-white rounded-2xl shadow-lg p-6">
+            {/* TRIP TYPE TOGGLE */}
+            <div className="flex gap-6 mb-6">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input 
+                  type="radio" 
+                  name="tripType" 
+                  checked={tripType === "one-way"} 
+                  onChange={() => setTripType("one-way")}
+                  className="w-4 h-4 text-red-500 focus:ring-red-500"
+                />
+                <span className="font-medium text-gray-700">Sekali Jalan</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input 
+                  type="radio" 
+                  name="tripType" 
+                  checked={tripType === "round-trip"} 
+                  onChange={() => setTripType("round-trip")}
+                  className="w-4 h-4 text-red-500 focus:ring-red-500"
+                />
+                <span className="font-medium text-gray-700">Pulang Pergi</span>
+              </label>
             </div>
 
-            <input
-              type="date"
-              value={departDate}
-              onChange={(e) => setDepartDate(e.target.value)}
-              className="px-4 py-2 bg-gray-100 rounded-full text-sm outline-none"
-            />
+            {/* SEARCH INPUTS GRID */}
+            <div className="grid grid-cols-12 gap-4 items-end">
+              {/* FROM & TO (Col 1-5) */}
+              <div className="col-span-12 md:col-span-5 grid grid-cols-[1fr,auto,1fr] gap-2 items-center relative">
+                {/* FROM */}
+                <AirportSelector
+                  label="Dari"
+                  placeholder="Jakarta, JKTC"
+                  airports={airports}
+                  value={originId}
+                  onChange={setOriginId}
+                  icon={<FiAirplay className="rotate-[-90deg]" />}
+                />
 
-            <PassengerClassSelector
-              initialPassenger={parseInt(passenger)}
-              initialSeatClass={seatClass}
-              onSave={(p, s) => {
-                setPassenger(p.toString());
-                setSeatClass(s);
-              }}
-            />
+                {/* SWAP BUTTON */}
+                <button 
+                  onClick={handleSwapAirports}
+                  className="w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-md mt-6 mx-1 z-10"
+                >
+                  <FiRepeat className="text-sm" />
+                </button>
 
-            <button
-              onClick={handleSearch}
-              className="ml-auto px-6 py-2 bg-red-500 text-white rounded-lg"
-            >
-              Cari
-            </button>
+                {/* TO */}
+                <AirportSelector
+                  label="Ke"
+                  placeholder="Denpasar-Bali, DPS"
+                  airports={airports}
+                  value={destId}
+                  onChange={setDestId}
+                  icon={<FiAirplay className="rotate-[90deg]" />}
+                />
+              </div>
+
+              {/* DATES (Col 6-9) */}
+              <div className="col-span-12 md:col-span-4 grid grid-cols-2 gap-4">
+                <CalendarDatePicker
+                  value={departDate}
+                  min={getTodayDate()}
+                  onChange={setDepartDate}
+                  className="relative"
+                  triggerClassName="group-focus-within:ring-2 group-focus-within:ring-red-100 group-focus-within:border-red-400"
+                  label="Pergi"
+                />
+                <div className={tripType === "one-way" ? "opacity-50 pointer-events-none" : ""}>
+                  <CalendarDatePicker
+                    value={returnDate}
+                    min={departDate || getTodayDate()}
+                    onChange={setReturnDate}
+                    disabled={tripType === "one-way"}
+                    className="relative"
+                    triggerClassName={tripType === "round-trip" ? "group-focus-within:ring-2 group-focus-within:ring-red-100 group-focus-within:border-red-400" : ""}
+                    label="Pulang"
+                  />
+                </div>
+              </div>
+
+              {/* PASSENGERS & SEARCH (Col 10-12) */}
+              <div className="col-span-12 md:col-span-3 flex gap-4">
+                {/* PASSENGER SELECTOR */}
+                <div className="relative w-full">
+                  <label className="block text-xs text-gray-500 mb-1 ml-1">Penumpang & Kelas</label>
+                  <PassengerClassSelector
+                    initialPassenger={parseInt(passenger)}
+                    initialSeatClass={seatClass}
+                    onSave={(p, s) => {
+                      setPassenger(p.toString());
+                      setSeatClass(s);
+                    }}
+                    className="w-full"
+                    triggerClassName="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 w-full justify-between hover:border-red-400 hover:bg-white"
+                  />
+                </div>
+
+                {/* SEARCH BUTTON */}
+                <button
+                  onClick={handleSearch}
+                  className="h-[50px] w-[50px] bg-red-600 text-white rounded-xl flex items-center justify-center hover:bg-red-700 transition-colors shadow-lg shadow-red-200 mt-auto mb-[1px]"
+                >
+                  <FiSearch className="text-2xl" />
+                </button>
+              </div>
+            </div>
           </div>
-        </section>
+        </div>
 
-        {/* FILTER */}
+        {/* FILTER & LIST (Existing Content) */}
         <section className="max-w-7xl mx-auto px-6 py-4 flex gap-3 flex-wrap">
           <FilterSelect
             icon={<FiShuffle />}
@@ -298,15 +385,16 @@ export default function PesanTiketPage() {
           />
         </section>
 
-        {/* LIST */}
-        <section className="max-w-7xl mx-auto px-6 pb-12 space-y-4">
+        <section className="max-w-7xl mx-auto px-6 space-y-4">
           {loading ? (
             <div className="text-center py-10">Loading flights...</div>
           ) : !originId || !destId ? (
-            <div className="text-center py-10">Silakan cari penerbangan terlebih dahulu.</div>
+            <div className="text-center py-10 bg-white rounded-xl shadow-sm">
+              <p className="text-gray-500">Silakan pilih bandara asal dan tujuan untuk mencari penerbangan.</p>
+            </div>
           ) : filteredFlights.length === 0 ? (
-            <div className="text-center py-10">
-              Tidak ada penerbangan ditemukan.
+            <div className="text-center py-10 bg-white rounded-xl shadow-sm">
+              <p className="text-gray-500">Tidak ada penerbangan ditemukan untuk rute ini.</p>
             </div>
           ) : (
             filteredFlights.map((f) => (

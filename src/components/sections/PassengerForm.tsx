@@ -25,34 +25,43 @@ export default function PassengerForm({ index, data, onChange }) {
 
         <div className="grid grid-cols-2 gap-4">
           <input
-            className="input"
-            placeholder="Nama Depan"
+            className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3"
+            placeholder="Nama Depan / tengah (jika ada)"
             value={data.firstName}
             onChange={(e) => onChange("firstName", e.target.value)}
           />
           <input
-            className="input"
-            placeholder="Nama Belakang"
+            className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3"
+            placeholder="Nama Keluarga / Nama Belakang"
             value={data.lastName}
             onChange={(e) => onChange("lastName", e.target.value)}
           />
         </div>
+        <p className="text-xs text-gray-500">Isi sesuai KTP/Paspor (tanpa tanda baca dan gelar)</p>
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={!!data.singleName}
+            onChange={(e) => onChange("singleName", e.target.checked)}
+          />
+          Nama Penumpang ini hanya memiliki 1 kata
+        </label>
 
         <div className="grid grid-cols-3 gap-4">
           <input
-            className="input"
+            className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3"
             placeholder="Tanggal"
             value={data.dobDay}
             onChange={(e) => onChange("dobDay", e.target.value)}
           />
           <input
-            className="input"
+            className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3"
             placeholder="Bulan"
             value={data.dobMonth}
             onChange={(e) => onChange("dobMonth", e.target.value)}
           />
           <input
-            className="input"
+            className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3"
             placeholder="Tahun"
             value={data.dobYear}
             onChange={(e) => onChange("dobYear", e.target.value)}
@@ -60,7 +69,7 @@ export default function PassengerForm({ index, data, onChange }) {
         </div>
 
         <input
-          className="input"
+          className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3"
           placeholder="Kewarganegaraan"
           value={data.nationality}
           onChange={(e) => onChange("nationality", e.target.value)}

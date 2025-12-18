@@ -73,36 +73,53 @@ export default function BookingSummary({ flight, passengerCount, seatClass }: { 
   const destCode = flight.destination?.code || "???";
   const depTime = flight.departure_time ? new Date(flight.departure_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "";
   const arrTime = flight.arrival_time ? new Date(flight.arrival_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "";
-  const airline = flight.airline?.name || "Unknown";
-  const duration = flight.duration_formatted || "Unknown";
+  const airlineLogo = flight.airline?.logo_url || "";
+  const duration = flight.duration_formatted || "";
+  const dateLabel = flight.departure_time ? new Date(flight.departure_time).toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: '2-digit' }) : "";
+  const transitLabel = flight.transit_count === 0 ? "Langsung" : `${flight.transit_count} Transit`;
 
   const selectedClass = flight.flight_classes?.find(c => c.seat_class === seatClass) || flight.flight_classes?.[0];
   const price = parseFloat(selectedClass?.price || "0");
   const total = price * passengerCount;
 
   return (
-    <div className="bg-white rounded-xl shadow p-6 sticky top-28">
-      <h3 className="font-semibold mb-4">
-        {originCity} → {destCity}
-      </h3>
-
-      <div className="text-sm space-y-2">
-        <p>🛫 {depTime} – {originCode}</p>
-        <p>🛬 {arrTime} – {destCode}</p>
-        <p>✈️ {airline} • {duration}</p>
-        <p className="capitalize">💺 {seatClass.replace('_', ' ')}</p>
+    <div className="bg-white rounded-xl shadow top-28 overflow-hidden" style={{height: '18rem'}}>
+      <div className="px-6 pt-5 pb-4">
+        <div className="text-lg font-semibold">{originCity} → {destCity}</div>
       </div>
-
-      <hr className="my-4" />
-
-      <div className="flex justify-between text-sm">
-        <span>{passengerCount} Penumpang</span>
-        <span>x IDR {price.toLocaleString()}</span>
-      </div>
-
-      <div className="flex justify-between text-sm mt-2 font-semibold">
-        <span>Total Pembayaran</span>
-        <span className="text-red-600">IDR {total.toLocaleString()}</span>
+      <div className="border-t">
+        <div className="px-6 py-3 flex items-center gap-2 text-sm">
+          <span className="px-2 py-1 rounded-md border text-gray-700">Pergi</span>
+          <span className="text-gray-600">{dateLabel}</span>
+        </div>
+        <div className="px-6 pb-4">
+          <div className="rounded-xl border p-4 flex items-center gap-4">
+            <img
+              src={airlineLogo}
+              alt={flight.airline?.name}
+              className="w-8 h-8 object-contain"
+              onError={(e) => { (e.currentTarget as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3C/svg%3E"; }}
+            />
+            <div className="flex-1 grid grid-cols-3 text-sm">
+              <div className="text-gray-900">
+                <div className="font-semibold">{depTime}</div>
+                <div className="text-xs text-gray-500">{originCode}</div>
+              </div>
+              <div className="text-center text-gray-700">
+                <div className="font-medium">{duration}</div>
+                <div className="text-xs text-gray-500">{transitLabel}</div>
+              </div>
+              <div className="text-right text-gray-900">
+                <div className="font-semibold">{arrTime}</div>
+                <div className="text-xs text-gray-500">{destCode}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="px-6 py-4 border-t flex items-center justify-between text-sm">
+          <span className="text-gray-600">Total Pembayaran</span>
+          <span className="font-bold text-red-600">IDR {total.toLocaleString("id-ID")}</span>
+        </div>
       </div>
     </div>
   );

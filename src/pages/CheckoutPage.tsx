@@ -8,7 +8,6 @@ import ContactForm from "../components/sections/ContatcForm";
 import PassengerForm from "../components/sections/PassengerForm";
 import PassportForm from "../components/sections/PassportForm";
 import BookingSummary from "../components/sections/BookingSummary";
-import PaymentSummary from "../components/sections/PaymentSummary";
 
 interface Flight {
   id: number;
@@ -82,6 +81,7 @@ export default function CheckoutPage() {
         title: "tuan",
         firstName: "",
         lastName: "",
+        singleName: false,
         dobDay: "",
         dobMonth: "",
         dobYear: "",
@@ -257,8 +257,8 @@ export default function CheckoutPage() {
       //   window.location.href = data.payment_url;
       // } else {
         // Fallback ke halaman payment internal
-        navigate("/payment", {
-          state: { paymentMethod: "qris", order: data },
+        navigate("/payment-method", {
+          state: { order: data, flight, passengers: passengerCount, seat_class: selectedSeatClass },
         });
       // }
     } catch (err: any) {
@@ -291,13 +291,23 @@ export default function CheckoutPage() {
               />
             </React.Fragment>
           ))}
-
-          <PaymentSummary
-            paymentMethod="qris"
-            setPaymentMethod={() => {}} // Fixed payment method for now
-            onSubmit={handleSubmit}
-            loading={loading}
-          />
+          
+          <div className="bg-white rounded-xl shadow p-6 flex items-center justify-between">
+            <div className="text-sm">Total Pembayaran</div>
+            <div className="font-bold text-red-600">
+              IDR {(() => {
+                const price = parseFloat(flight.flight_classes?.find(fc => fc.seat_class === selectedSeatClass)?.price || flight.flight_classes?.[0]?.price || "0");
+                return (price * passengerCount).toLocaleString("id-ID");
+              })()}
+            </div>
+          </div>
+          <button
+            onClick={handleSubmit}
+            className="w-full bg-red-600 text-white rounded-xl py-3 font-semibold hover:bg-red-700 transition-colors"
+            disabled={loading}
+          >
+            {loading ? "Memproses..." : "Lanjut Bayar"}
+          </button>
         </div>
 
         {/* RIGHT */}

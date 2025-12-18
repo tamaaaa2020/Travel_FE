@@ -9,13 +9,13 @@ export default function PassportForm({ index, data, onChange }) {
       <div className="p-6 space-y-4">
         {/* ... existing fields with value and onChange ... */}
         <input
-          className="input"
+          className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3"
           placeholder="Nomor Paspor"
           value={data.number}
           onChange={(e) => onChange("number", e.target.value)}
         />
         <input
-          className="input"
+          className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3"
           placeholder="Negara Penerbit"
           value={data.issuingCountry}
           onChange={(e) => onChange("issuingCountry", e.target.value)}
@@ -23,19 +23,19 @@ export default function PassportForm({ index, data, onChange }) {
 
         <div className="grid grid-cols-3 gap-4">
           <input
-            className="input"
+            className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3"
             placeholder="Tanggal"
             value={data.validDay}
             onChange={(e) => onChange("validDay", e.target.value)}
           />
           <input
-            className="input"
+            className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3"
             placeholder="Bulan"
             value={data.validMonth}
             onChange={(e) => onChange("validMonth", e.target.value)}
           />
           <input
-            className="input"
+            className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3"
             placeholder="Tahun"
             value={data.validYear}
             onChange={(e) => onChange("validYear", e.target.value)}
